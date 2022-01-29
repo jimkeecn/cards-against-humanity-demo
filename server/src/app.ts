@@ -15,6 +15,18 @@ const cards = [];
 
 io.on('connection', (socket: any) => { 
     console.log("New player connected : " + socket);
+
+    socket.emit('myId$', socket.id);
+
+    socket.on("checkMyExist$", () => { 
+        let player = getMyDetail();
+        if (player == null) {
+            socket.emit('$404');
+        } else {
+            socket.emit('$200');
+        }
+    })
+
     socket.on("createUserName$", (userName: string) => {
         active_player_list.push(InitiatePlayer(userName,socket.id))
     });
@@ -449,6 +461,7 @@ io.on('connection', (socket: any) => {
             return;
         }
     
+      
         /**
          * check if the player is in the list...
          * If the player exists, continue
@@ -480,6 +493,15 @@ io.on('connection', (socket: any) => {
             console.error("This player is already in the room");
         }
     
+        /**
+         * Check room if it's full,  max player number is game.totalNumber
+         */
+
+         if (room.activePlayerList.length >= room.totalPlayer) {
+            console.error("The room is full");
+            return;
+        }
+
         /**
          * Join the room and waiting..
          */

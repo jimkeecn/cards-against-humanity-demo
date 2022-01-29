@@ -1,0 +1,14 @@
+<div class="buttons">
+    <button mat-stroked-button color="primary" class="button" (click)="refresh()">刷新列表</button>
+    <button mat-stroked-button color="primary" (click)="createNewRoom()">创建新房间</button>
+</div>
+<div class="spinner" *ngIf="refreshing">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div class="list" *ngIf="!refreshing">
+    <!-- <div class="center" *ngIf="roomList.length == 0">找不到任何房间，请刷新列表</div> -->
+    <app-room [name]="'patrick game'" [id]="'123123aabbcc'" [number]="5"></app-room>
+    <app-room [name]="'东京公寓'" [id]="'553163aabbcc'" [number]="2"></app-room>
+    <app-room [name]="'东海岸一姐'" [id]="'423123aaccac'" [number]="1"></app-room>
+</div>
