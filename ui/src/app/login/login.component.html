@@ -1,12 +1,14 @@
-<form class="example-form" [formGroup]="loginForm">
+<form class="example-form" [formGroup]="loginForm" >
     <mat-form-field class="example-full-width" appearance="fill">
       <mat-label>用户名</mat-label>
       <input matInput #userName maxlength="10" formControlName="userName">
       <mat-hint align="start"><strong>这个用户名会显示给其他用户</strong> </mat-hint>
       <mat-hint align="end">{{userName.value.length}} / 10</mat-hint>
-      <mat-error>
+      <mat-error >
         用户名不能超过<strong>10</strong>个字符串
       </mat-error>
     </mat-form-field>
-    <button mat-raised-button color="primary" type="button" (click)="login()">登录</button>
+    <div class="example-full-width button">
+      <button mat-raised-button color="primary" type="button" (click)="login()">登录</button>
+    </div>
   </form>

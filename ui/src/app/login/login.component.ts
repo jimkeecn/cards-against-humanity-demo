@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 export class LoginComponent implements OnInit {
 
   loginForm = new FormGroup({
-    userName: new FormControl("",[Validators.maxLength(10)])
+    userName: new FormControl("",[Validators.maxLength(10),Validators.required])
   })
 
   constructor(public route:Router) { }

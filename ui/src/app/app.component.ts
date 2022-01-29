@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 export class AppComponent {
   title = 'ui';
   socketId: string = "default";
+  gameVersion: string = 'v1.0.0';
   constructor() {
     
   }

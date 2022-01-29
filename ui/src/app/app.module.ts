@@ -51,13 +51,15 @@ import { MatTableModule } from '@angular/material/table';
 import { RoomListComponent } from './room-list/room-list.component';
 import { AppRoutingModule } from './app-routing.module';
 import { RoomComponent } from './room-list/room/room.component';
+import { NewRoomComponent } from './new-room/new-room.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RoomListComponent,
-    RoomComponent
+    RoomComponent,
+    NewRoomComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,31 @@
+<div class="return">
+    <button mat-stroked-button type="button" (click)="return()"><mat-icon>keyboard_arrow_left</mat-icon>返回</button>
+</div>
+<form class="form" [formGroup]="roomForm">
+    <mat-form-field class="example-full-width" appearance="fill">
+        <mat-label>房间名字</mat-label>
+        <input matInput #roomName maxlength="10" formControlName="name">
+        <mat-hint align="start"><strong>这个房间名字会显示给其他用户</strong> </mat-hint>
+        <mat-hint align="end">{{roomName.value.length}} / 10</mat-hint>
+        <mat-error *ngIf="roomForm.get('name')?.errors?.['maxlength']">
+          房间名字不能超过<strong>10</strong>个字符串
+        </mat-error>
+        <mat-error *ngIf="roomForm.get('name')?.errors?.['required']">
+            房间名字不能为空
+        </mat-error>
+    </mat-form-field>
+    <mat-form-field class="example-full-width" appearance="fill">
+        <mat-label>房间最大人数</mat-label>
+        <mat-select formControlName="number">
+            <mat-option [value]="5">5人局</mat-option>
+            <mat-option [value]="10">10人局</mat-option>
+          </mat-select>
+        <mat-error>
+          请选择一个房间最大人数
+        </mat-error>
+    </mat-form-field>
+    <div class="example-full-width button">
+        <button mat-raised-button color="primary" type="button" (click)="create()">创建</button>
+    </div>
+    
+</form>

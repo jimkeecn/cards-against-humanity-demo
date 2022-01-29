@@ -1,6 +1,5 @@
 //npx ts-node src/foo.ts
 import express = require("express");
-import { isObject } from "util";
 import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO } from './models/model';
 const { v4: uuidv4 } = require('uuid');
 

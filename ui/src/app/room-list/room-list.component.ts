@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-room-list',
@@ -9,7 +10,7 @@ export class RoomListComponent implements OnInit {
 
   roomList: any = [];
   refreshing: boolean = false;
-  constructor() { }
+  constructor(public route:Router) { }
 
   ngOnInit(): void {
   }
@@ -22,7 +23,7 @@ export class RoomListComponent implements OnInit {
   }
 
   createNewRoom(): void{
-    
+    this.route.navigate(['new']);
   }
 
 }
