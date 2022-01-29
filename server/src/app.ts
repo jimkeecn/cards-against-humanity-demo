@@ -1,7 +1,7 @@
 //npx ts-node src/foo.ts
 import express = require("express");
 import { isObject } from "util";
-import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO } from './models/model';
+import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO } from './models/model';
 const { v4: uuidv4 } = require('uuid');
 
 const app = require("express")();
@@ -15,11 +15,11 @@ const cards = [];
 
 io.on('connection', (socket: any) => { 
     console.log("New player connected : " + socket);
-    socket.on("createUserName", (userName: string) => {
+    socket.on("createUserName$", (userName: string) => {
         active_player_list.push(InitiatePlayer(userName,socket.id))
     });
 
-    socket.on("createNewRoom", () => { 
+    socket.on("createNewRoom$", () => { 
         //check if I have room already
         let myRoom = getMyRoom(socket.id);
 
@@ -47,13 +47,22 @@ io.on('connection', (socket: any) => {
         socket.join(room.uniqueId);
     })
 
-
-    socket.on("joinRoom", (roomId: string) => { 
-        joinRoom(roomId, socket.id);
-        socket.join(roomId);
+    socket.on("refreshRoom$", () => { 
+        socket.emit('$roomList', getAvailableGameDTO());
     })
 
-    socket.on("startGame", () => { 
+
+    socket.on("joinRoom$", (roomId: string) => { 
+        let player = joinRoom(roomId, socket.id);
+        let playerDTO: PlayerDTO = {
+            uniqueId: player.uniqueId,
+            userName: player.userName
+        }
+        socket.join(roomId);
+        $joinRoom(roomId, playerDTO);
+    })
+
+    socket.on("startGame$", () => { 
         var room = getMyRoom(socket.id);
         if (room == null) {
             console.error("Cannot find your room.");
@@ -61,30 +70,9 @@ io.on('connection', (socket: any) => {
         }
         //Set the game as start and broadcast to everyone in the game
         startGame(room.uniqueId, socket.id);
-        socket.broadcast.to(room.uniqueId).emit("startGame");
+        
         //Set the first judge and broadcast to everyone in the game
-
         var judge = pickFirstJudge(room);
-        setTimeout(() => { 
-            socket.broadcast.to(room.uniqueId).emit("judgePick", room.judge.uniqueId);
-        }, 1000)
-        
-        //get cards for each player
-        assignPlayerCards(room,10);
-        setTimeout(() => { 
-            room.activePlayerList.forEach(x => { 
-                if (x.socketId == socket.id) {
-                    socket.emit("initCards",x.currentDeck)
-                }
-            })
-        }, 3000)
-        
-
-        //get the first question
-        var first_question= getRandomQuestion(room);
-        setTimeout(() => { 
-            socket.broadcast.to(room.uniqueId).emit("currentQuestion", first_question);
-        }, 5000)
 
         room.rounds.push({
             index: 1,
@@ -94,16 +82,36 @@ io.on('connection', (socket: any) => {
             judge: { ...judge },
             answer:null
         })
+
+
+        setTimeout(() => { 
+            $pickJudge(room, room.rounds[room.rounds.length - 1].judge);
+        }, 1000)
+        
+        //get cards for each player
+        assignPlayerCards(room,10);
+        setTimeout(() => { 
+            $initCards(room);
+        }, 3000)
+        
+
+        //get the first question
+        var first_question= getRandomQuestion(room);
+        setTimeout(() => { 
+            $currentQuestion(room, first_question);
+            $startRound(room);
+        }, 5000)
+        
     })
 
-    socket.on("startGameRound", () => { 
+    socket.on("startGameRound$", () => { 
         
     })
 
     /**
      * need to impletement something to avoid server pressure on unlimited pick API call..
      */
-    socket.on("selectACard", (cardId: string) => { 
+    socket.on("selectACard$", (cardId: string) => { 
         var my_room = getMyRoom(socket.id);
         var current_round = my_room.rounds[my_room.rounds.length - 1];
 
@@ -147,19 +155,19 @@ io.on('connection', (socket: any) => {
             })
 
             //broadcast to player a card has been picked and added to the round.
-            socket.broadcast.to(my_room.uniqueId).emit("cardPicked");
+            socket.broadcast.to(my_room.uniqueId).emit("$cardPicked");
 
             //If the number of picks of the current round is equal to number of active player, it means the pick phase is completed.
             if (current_round.picks.length == my_room.activePlayerList.length) {
                 
                 setTimeout(() => { 
                     current_round.status = 'judging';
-                    socket.broadcast.to(my_room.uniqueId).emit("judgePicking");
+                    socket.broadcast.to(my_room.uniqueId).emit("$judgePicking");
                     var picks = [];
                     current_round.picks.forEach(x => { 
                         picks.push(x.pickedCard);
                     })
-                    io.to(current_round.judge.socketId).emit('cardsForRound', picks);
+                    io.to(current_round.judge.socketId).emit('$cardsForRound', picks);
                 }, 3000)
                 
             } 
@@ -168,7 +176,7 @@ io.on('connection', (socket: any) => {
         }
     })
 
-    socket.on("pickACard", (cardId: string) => { 
+    socket.on("pickACard$", (cardId: string) => { 
         var my_room = getMyRoom(socket.id);
         var current_round = my_room.rounds[my_room.rounds.length - 1];
         //check player is the judge
@@ -197,8 +205,9 @@ io.on('connection', (socket: any) => {
 
         if (winnerOfTheRound.score == 10) {
             //annouce winner of the game..
+            socket.broadcast.to(my_room.uniqueId).emit("$gameOver", winnerOfTheRound);
         } else {
-
+            roundOver(my_room);
         }
     })
 
@@ -226,8 +235,19 @@ io.on('connection', (socket: any) => {
         return room;
     }
     
-    function getAvailableGame() {
-        return room_list;
+    function getAvailableGameDTO() {
+        let room_list_DTO = [];
+        room_list.forEach(x => { 
+            let dto:RoomDTO = {
+                uniqueId: x.uniqueId,
+                totalPlayer: x.totalPlayer,
+                activePlayer: x.activePlayer,
+                activePlayerList: [...x.activePlayerList]
+            }
+
+            room_list_DTO.push(dto);
+        })
+        return room_list_DTO;
     }
     
     function getMyDetail() {
@@ -280,9 +300,10 @@ io.on('connection', (socket: any) => {
         room.questions = [...questions];
     }
     
-    function getRandomQuestion(room:Room) {
+    function getRandomQuestion(room:Room):Question {
         let number = Math.random() * room.questions.length;
-        return room.cards[number]
+        
+        return room.questions[number]
     }
 
     
@@ -340,14 +361,17 @@ io.on('connection', (socket: any) => {
         //get next judge
         var judge = pickNextJudge(room);
         //create new round.
-        room.rounds.push({
+
+        let next_round = {
             index: room.rounds.length + 1,
             question: question_next,
             picks: [],
             status: 'initiating',
             judge: { ...judge },
-            answer:null
-        })
+            answer: null
+        };
+        room.rounds.push(next_round)
+
 
         //Update everyone's card stack.
         assignPlayerCards(room, 1);
@@ -355,10 +379,34 @@ io.on('connection', (socket: any) => {
         current_round.status = 'completed';
         //refresh game data to player and start next round
         setTimeout(() => {
+            //tell what are the picks and who is the winner of the round.
             let pickComplete: PickCompleteDTO = new PickCompleteDTO(current_round.picks, current_round.answer);
             console.log(pickComplete);
-            socket.broadcast.to(room.uniqueId).emit("pickComplete",pickComplete);
+            socket.broadcast.to(room.uniqueId).emit("$pickComplete",pickComplete);
         }, 1000);
+
+        //tell who is the next judge.
+        setTimeout(() => { 
+            $pickJudge(room,next_round.judge);
+        }, 3000)
+        
+        //tell everyone's new card
+        setTimeout(() => { 
+            room.activePlayerList.forEach(x => { 
+                if (socket.id == x.socketId) {
+                    socket.emit("$newCards", x.currentDeck);
+                }
+            })
+
+            
+        }, 5000)
+        
+         //tell which is the next question and start the round.
+         setTimeout(() => { 
+            var question = getRandomQuestion(room);
+             $currentQuestion(room, question);
+             $startRound(room);
+        }, 7000)
     }
 
     /**
@@ -441,6 +489,8 @@ io.on('connection', (socket: any) => {
             currentDeck:[]
         }
         room.activePlayerList.push(game_me);
+
+        return game_me;
     }
     
     function getMyRoom(socketId:string) {
@@ -468,6 +518,37 @@ io.on('connection', (socket: any) => {
 
         return player;
     }
+
+
+    /** all emit functions, all function start with $ as emit */
+    function $pickJudge(room: Room, judge: Player) {
+        let judgeDTO: PlayerDTO = {
+            uniqueId: judge.uniqueId,
+            userName: judge.userName
+        }
+        socket.broadcast.to(room.uniqueId).emit("$pickJudge", judgeDTO);
+    }
+
+    function $initCards(room:Room) {
+        room.activePlayerList.forEach(x => { 
+            if (x.socketId == socket.id) {
+                socket.emit("$initCards",x.currentDeck)
+            }
+        })
+    }
+
+    function $currentQuestion(room:Room,first_question:Question) {
+        socket.broadcast.to(room.uniqueId).emit("$currentQuestion", first_question);
+    }
+
+    function $startRound(room:Room) {
+        socket.broadcast.to(room.uniqueId).emit("$startRound");
+    }
+
+    function $joinRoom(roomId:string,playerDTO:PlayerDTO) {
+        socket.broadcast.to(roomId).emit("$joinRoom", playerDTO);
+    }
+    
 
 })
 
