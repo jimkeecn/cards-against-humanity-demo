@@ -5,8 +5,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { environment } from '../environments/environment';
 //angular meterial
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -52,6 +52,18 @@ import { RoomListComponent } from './room-list/room-list.component';
 import { AppRoutingModule } from './app-routing.module';
 import { RoomComponent } from './room-list/room/room.component';
 import { NewRoomComponent } from './new-room/new-room.component';
+import { GameComponent } from './game/game.component';
+import { Player } from './model';
+
+let user_string = localStorage.getItem('user');
+let user:Player = JSON.parse(user_string);
+
+const config: SocketIoConfig = {
+  url: `http://localhost:${environment.socketPort}`, options: {
+    query: {
+      user:user_string
+    }
+}};
 
 @NgModule({
   declarations: [
@@ -59,12 +71,14 @@ import { NewRoomComponent } from './new-room/new-room.component';
     LoginComponent,
     RoomListComponent,
     RoomComponent,
-    NewRoomComponent
+    NewRoomComponent,
+    GameComponent
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     CommonModule,
+    SocketIoModule.forRoot(config),
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatCheckboxModule,

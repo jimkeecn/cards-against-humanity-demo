@@ -7,8 +7,10 @@
 </div>
 
 <div class="list" *ngIf="!refreshing">
-    <!-- <div class="center" *ngIf="roomList.length == 0">找不到任何房间，请刷新列表</div> -->
-    <app-room [name]="'patrick game'" [id]="'123123aabbcc'" [number]="5"></app-room>
-    <app-room [name]="'东京公寓'" [id]="'553163aabbcc'" [number]="2"></app-room>
-    <app-room [name]="'东海岸一姐'" [id]="'423123aaccac'" [number]="1"></app-room>
+    <div class="center" *ngIf="roomList.length == 0">找不到任何房间，请刷新列表</div>
+    <app-room [name]="room.name" 
+    [id]="room.uniqueId" 
+    [total]="room.totalPlayer" 
+    [number]="room.activePlayerList.length"
+    *ngFor="let room of roomList"></app-room>
 </div>

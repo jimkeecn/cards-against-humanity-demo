@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { RoomDTO } from '../model';
+import { SocketService } from '../socket.service';
 
 @Component({
   selector: 'app-room-list',
@@ -8,15 +10,21 @@ import { Router } from '@angular/router';
 })
 export class RoomListComponent implements OnInit {
 
-  roomList: any = [];
+  roomList: RoomDTO[] = [];
   refreshing: boolean = false;
-  constructor(public route:Router) { }
+  constructor(public route: Router, private sk: SocketService) { 
+    sk.$roomList.subscribe(x => { 
+      console.log('roomList', x);
+      this.roomList = [...x];
+    })
+  }
 
   ngOnInit(): void {
   }
 
   refresh(): void{
     this.refreshing = true;
+    this.sk.refreshRoom$();
     setTimeout(() => { 
       this.refreshing = false;
     },3000)

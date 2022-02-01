@@ -1,11 +1,26 @@
 //npx ts-node src/foo.ts
+//import express, {Request,Response,Application} from 'express';
 import express = require("express");
-import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO } from './models/model';
+import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO, RoomInput } from './models/model';
+import { Server } from "socket.io";
+import { createServer } from "http";
 const { v4: uuidv4 } = require('uuid');
 
-const app = require("express")();
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
+const app = express();
+const PORT = process.env.PORT || 8000;
+// app.set("port",PORT);
+// const cors = require('cors');
+// app.use(cors());
+
+let http = require("http").Server(app);
+// let io = require("socket.io")(http);
+
+//const httpServer = createServer();
+const io = new Server(http, {
+  cors: {
+    origin: "http://localhost:4200"
+  }
+});
 
 var room_list: Room[] = [];
 var active_player_list: Player[] = [];
@@ -13,26 +28,35 @@ const questions = [];
 const cards = [];
 
 io.on('connection', (socket: any) => { 
-    console.log("New player connected : " + socket);
+
+    let query = socket.handshake.query
+    let socket_user : Player = query.user
+
+    console.log("New player connected : " + socket_user + `, ${socket.id}`);
 
     socket.emit('myId$', socket.id);
 
-    socket.on("checkMyExist$", () => { 
-        let player = getMyDetail();
+    socket.on("checkMyExist$", (id:string) => { 
+        let player = getMyDetailByUniqueId(id);
         if (player == null) {
             socket.emit('$404');
         } else {
-            socket.emit('$200');
+            socket.emit('$200',player);
         }
     })
 
     socket.on("createUserName$", (userName: string) => {
-        active_player_list.push(InitiatePlayer(userName,socket.id))
+        let player = InitiatePlayer(userName, socket.id);
+        active_player_list.push(player);
+        console.log(active_player_list);
+        socket_user = { ...player };
+        socket.emit('$createUserName',player);
     });
 
-    socket.on("createNewRoom$", () => { 
+    socket.on("createNewRoom$", (param:RoomInput) => { 
         //check if I have room already
-        let myRoom = getMyRoom(socket.id);
+        console.log('socket_user');
+        let myRoom = getMyRoom(socket_user.uniqueId);
 
         if (myRoom != null) {
             console.error("This player has a room already");
@@ -41,7 +65,7 @@ io.on('connection', (socket: any) => {
 
         //Find who is creating this game.
         let owner = active_player_list.find(x => { 
-            if (x.socketId == socket.id) {
+            if (x.uniqueId == socket_user.uniqueId) {
                 return x;
             }
         });
@@ -53,8 +77,9 @@ io.on('connection', (socket: any) => {
         }
 
         //create the new room..
-        let room = createNewRoom(owner);
+        let room = createNewRoom(owner,param);
         room_list.push(room);
+        console.log(room_list);
         socket.join(room.uniqueId);
     })
 
@@ -223,15 +248,16 @@ io.on('connection', (socket: any) => {
     })
 
 
-    function createNewRoom(owner: Player) {
+    function createNewRoom(owner: Player,param:RoomInput) {
         var game_owner:GamePlayer = {
             ...owner,
             score: 0,
             currentDeck:[]
         }
         let room: Room = {
+            name:param.name,
             uniqueId : uuidv4(),
-            totalPlayer: 5,
+            totalPlayer: param.totalPlayer,
             activePlayer: 1,
             activePlayerList: [game_owner],
             questions: [],
@@ -253,11 +279,13 @@ io.on('connection', (socket: any) => {
                 uniqueId: x.uniqueId,
                 totalPlayer: x.totalPlayer,
                 activePlayer: x.activePlayer,
-                activePlayerList: [...x.activePlayerList]
+                activePlayerList: [...x.activePlayerList],
+                name:x.name
             }
 
             room_list_DTO.push(dto);
         })
+        console.log(room_list_DTO);
         return room_list_DTO;
     }
     
@@ -266,6 +294,13 @@ io.on('connection', (socket: any) => {
             return x
         }})
     }
+
+    function getMyDetailByUniqueId(id:string) {
+        return active_player_list.find(x => {if(x.uniqueId == id) {
+            return x
+        }})
+    }
+
     function InitiatePlayer(userName: string, socketId: string) {
         //create a new player object with unqiue socketId and uniqueId
         let player: Player = {
@@ -514,10 +549,10 @@ io.on('connection', (socket: any) => {
         return game_me;
     }
     
-    function getMyRoom(socketId:string) {
+    function getMyRoom(userId:string) {
         let myRoom = room_list.find(x => { 
             x.activePlayerList.find(y => { 
-                if (y.socketId == socketId) {
+                if (y.uniqueId == userId) {
                     return x;
                 }
             })
@@ -571,10 +606,20 @@ io.on('connection', (socket: any) => {
     }
     
 
+    function $errors(error: string, socketId: string) {
+        if (socket.id == socketId) {
+            socket.emit('$errors', error);
+        }
+        
+    }
 })
 
 
-http.listen(4444);
+http.listen(PORT, ():void => {
+    console.log(`Server Running here 👉 http://localhost:${PORT}`);
+});
+  
+
 
 
 

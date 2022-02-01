@@ -1,5 +1,3 @@
-import { stringify } from "querystring";
-
 export class Room {
     name: string;
     uniqueId: string;
