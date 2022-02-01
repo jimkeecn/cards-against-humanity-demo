@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 import { SocketService } from 'src/app/socket.service';
 
 @Component({
@@ -19,10 +20,15 @@ export class RoomComponent implements OnInit {
   }
 
   join(): void {
-    
     console.log(`join game ${this.id}`);
     this.sk.joinRoom$(this.id);
-    this.route.navigate(['game']);
+    this.sk.$getRoomId.pipe(take(1)).subscribe(x => { 
+      if (x) {
+        console.info(`I have joined room ${x}`);
+        this.route.navigate(['game'], { queryParams: {id:x}});
+      }
+    })
+    
   }
 
 }

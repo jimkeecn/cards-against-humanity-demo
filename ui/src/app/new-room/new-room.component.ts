@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 import { SocketService } from '../socket.service';
 
 @Component({
@@ -8,7 +9,7 @@ import { SocketService } from '../socket.service';
   templateUrl: './new-room.component.html',
   styleUrls: ['./new-room.component.scss']
 })
-export class NewRoomComponent implements OnInit {
+export class NewRoomComponent implements OnInit,OnDestroy {
   
   roomForm = new FormGroup({
     name: new FormControl('', [Validators.maxLength(10),Validators.required]),
@@ -23,8 +24,13 @@ export class NewRoomComponent implements OnInit {
   create(): void{
     console.log(this.roomForm.value);
     if (this.roomForm.valid) {
-    this.sk.createNewRoom$(this.roomForm.value)
-    this.route.navigate(['game']);
+      this.sk.createNewRoom$(this.roomForm.value)
+      this.sk.$getRoomId.pipe(take(1)).subscribe(x => { 
+        if (x) {
+          console.info(`I have created room ${x}`);
+          this.route.navigate(['/game',x]);
+        }
+      })
     }
     
   }
@@ -33,4 +39,7 @@ export class NewRoomComponent implements OnInit {
     this.route.navigate(['roomlist']);
   }
 
+  
+  ngOnDestroy(): void {
+  }
 }

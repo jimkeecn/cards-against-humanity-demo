@@ -29,14 +29,29 @@ const cards = [];
 
 io.on('connection', (socket: any) => { 
 
-    let query = socket.handshake.query
-    let socket_user : Player = query.user
+    // let query_user = socket.handshake.query.user
+
+    // console.log('query',socket.handshake);
+    // let socket_user: Player = { 
+    //     uniqueId: query_user.uniqueId,
+    //     socketId: socket.id,
+    //     userName: query_user.userName
+    //  }
     
-    console.log("New player connected : " + socket_user + `, ${socket.id}`);
+    console.log("New player connected : " + getHandshakeAuth() + `, ${socket.id}`);
     console.info(`there are ${active_player_list.length} players`);
     console.info(`there are ${room_list.length} rooms`);
     socket.emit('myId$', socket.id);
 
+    socket.on("disconnect", (reason) => { 
+        let socket_user = getHandshakeAuth();
+        console.info(`disconnect | ${socket_user.userName} is disconnected`);
+        let room = getMyRoom(socket_user.uniqueId);
+        if (room) {
+            leaveRoom(room.uniqueId);
+        }
+    })
+    
     socket.on("checkMyExist$", (id:string) => { 
         let player = getMyDetailByUniqueId(id);
         if (player == null) {
@@ -50,38 +65,53 @@ io.on('connection', (socket: any) => {
         let player = InitiatePlayer(userName, socket.id);
         active_player_list.push(player);
         console.log(active_player_list);
-        socket_user = { ...player };
         socket.emit('$createUserName',player);
     });
 
     socket.on("createNewRoom$", (param:RoomInput) => { 
         //check if I have room already
-        console.log('socket_user');
+        let socket_user = getHandshakeAuth();
+        console.log("createNewRoom$ |  " + socket_user + "," + socket_user.uniqueId);
         let myRoom = getMyRoom(socket_user.uniqueId);
 
         if (myRoom != null) {
-            console.error("This player has a room already");
+            console.error("createNewRoom$ | This player has a room already");
             return;
         }
 
         //Find who is creating this game.
-        let owner = active_player_list.find(x => { 
-            if (x.uniqueId == socket_user.uniqueId) {
-                return x;
-            }
-        });
+        console.info(`createNewRoom$ | ${JSON.stringify(active_player_list)}`);
 
-        //If owner not existing, server error
-        if (owner == null) {
-            console.error("Cannot find owner from active player list");
-            return;
+        // let owner = active_player_list.find(x => {
+        //     console.log(`createNewRoom$ | literal player ${JSON.stringify(x)} && ${socket_user.uniqueId}`)
+        //     if (x.uniqueId == user_id) {
+        //         return x;
+        //     }
+        // });
+
+        
+        for (let x = 0; x < active_player_list.length; x++){
+            console.log(socket_user.uniqueId,active_player_list[x].uniqueId);
+            if (active_player_list[x].uniqueId === socket_user.uniqueId) {
+                let owner = active_player_list[x]
+
+                //If owner not existing, server error
+                console.info(`createNewRoom$ | ${JSON.stringify(owner)}`);
+                if (owner == null) {
+                    console.error("createNewRoom$ | Cannot find owner from active player list");
+                    return;
+                }
+
+                //create the new room..
+                let room = createNewRoom(owner,param);
+                room_list.push(room);
+                console.log(room_list);
+                socket.join(room.uniqueId);
+                $getRoomId(room.uniqueId);
+            }
         }
 
-        //create the new room..
-        let room = createNewRoom(owner,param);
-        room_list.push(room);
-        console.log(room_list);
-        socket.join(room.uniqueId);
+      
     })
 
     socket.on("refreshRoom$", () => { 
@@ -90,6 +120,8 @@ io.on('connection', (socket: any) => {
 
 
     socket.on("joinRoom$", (roomId: string) => { 
+
+        let socket_user = getHandshakeAuth();
         let player = joinRoom(roomId);
         let playerDTO: PlayerDTO = {
             uniqueId: player.uniqueId,
@@ -97,13 +129,72 @@ io.on('connection', (socket: any) => {
         }
         socket.join(roomId);
         $joinRoom(roomId, playerDTO);
-        console.log(socket_user.userName,roomId)
+        console.log(socket_user.userName, roomId);
+
     })
+
+    socket.on("leaveRoom$", (roomId: string) => { 
+        let socket_user = getHandshakeAuth();
+        room_list.forEach((x, index) => { 
+            /**
+             * If the owner leave the room. destroy the whole room and
+             * make all socket leave the room
+             */
+            if (x.owner.uniqueId == socket_user.uniqueId) {
+                room_list.splice(index, 1);
+                $ownerDisconnected(x.uniqueId);
+                io.socketsLeave(x.uniqueId);
+            }
+
+            /**
+             * If not the owner leave the room. 
+             * just make the user leave the room.
+             */
+            if (x.uniqueId == roomId) {
+                x.activePlayerList.forEach((y, index) => { 
+                    if (y.uniqueId == socket_user.uniqueId) {
+                        x.activePlayerList.splice(index, 1);
+                        socket.leave(x.uniqueId);
+                        $leaveRoom();
+                    }
+                })
+            }
+        })
+    })
+
+    function leaveRoom(roomId) {
+        let socket_user = getHandshakeAuth();
+        room_list.forEach((x, index) => { 
+            /**
+             * If the owner leave the room. destroy the whole room and
+             * make all socket leave the room
+             */
+            if (x.owner.uniqueId == socket_user.uniqueId) {
+                room_list.splice(index, 1);
+                $ownerDisconnected(x.uniqueId);
+                io.socketsLeave(x.uniqueId);
+            }
+
+            /**
+             * If not the owner leave the room. 
+             * just make the user leave the room.
+             */
+            if (x.uniqueId == roomId) {
+                x.activePlayerList.forEach((y, index) => { 
+                    if (y.uniqueId == socket_user.uniqueId) {
+                        x.activePlayerList.splice(index, 1);
+                        socket.leave(x.uniqueId);
+                        $leaveRoom();
+                    }
+                })
+            }
+        })
+    }
 
     socket.on("startGame$", () => { 
         var room = getMyRoom(socket.id);
         if (room == null) {
-            console.error("Cannot find your room.");
+            console.error("startGame$ | Cannot find your room.");
             return;
         }
         //Set the game as start and broadcast to everyone in the game
@@ -155,7 +246,7 @@ io.on('connection', (socket: any) => {
 
         //Check its not the judge
         if (current_round.judge.socketId == socket.id) {
-            console.error("Judge cannot play this round!");
+            console.error("selectACard$ | Judge cannot play this round!");
             return;
         }
 
@@ -167,7 +258,7 @@ io.on('connection', (socket: any) => {
         })
 
         if (deplicate_pick !== null) {
-            console.error("Card has been picked");
+            console.error("selectACard$ | Card has been picked");
             return;
         }
 
@@ -219,7 +310,7 @@ io.on('connection', (socket: any) => {
         var current_round = my_room.rounds[my_room.rounds.length - 1];
         //check player is the judge
         if (current_round.judge.socketId !== socket.id) {
-            console.error("You are not the judge!");
+            console.error("pickACard$ | You are not the judge!");
             return;
         }
         
@@ -331,17 +422,17 @@ io.on('connection', (socket: any) => {
         })
     
         if (room.isStart === true) {
-            console.error("game has been started...");
+            console.error("startGame | game has been started...");
             return;
         }
     
         if (room == null) {
-            console.error("cannot find this room to start the game");
+            console.error("startGame | cannot find this room to start the game");
             return;
         }
 
         if (room.activePlayerList.length < 6) {
-            console.error("not enough player");
+            console.error("startGame | not enough player");
             return;
         }
     
@@ -474,7 +565,7 @@ io.on('connection', (socket: any) => {
         })
     
         if (player == null) {
-            console.error("Cannot find the player");
+            console.error("returnPlayerCards | Cannot find the player");
             return;
         }
         return player.currentDeck;
@@ -482,6 +573,7 @@ io.on('connection', (socket: any) => {
     
     function joinRoom(roomId) {
     
+        let socket_user = getHandshakeAuth();
         /**
          * Check room if it is still existed..
          * If the room exists, continue
@@ -495,7 +587,7 @@ io.on('connection', (socket: any) => {
         })
     
         if (room == null) {
-            console.error("Cannot find a game to join");
+            console.error("joinRoom | Cannot find a game to join");
             return;
         }
     
@@ -512,7 +604,7 @@ io.on('connection', (socket: any) => {
         })
     
         if (me == null) {
-            console.error("Cannot find the player");
+            console.error("joinRoom | Cannot find the player");
             return;
         }
     
@@ -528,7 +620,7 @@ io.on('connection', (socket: any) => {
         })
     
         if (isInRoom != null) {
-            console.error("This player is already in the room");
+            console.error("joinRoom | This player is already in the room");
         }
     
         /**
@@ -536,7 +628,7 @@ io.on('connection', (socket: any) => {
          */
 
          if (room.activePlayerList.length >= room.totalPlayer) {
-            console.error("The room is full");
+            console.error("joinRoom | The room is full");
             return;
         }
 
@@ -545,7 +637,7 @@ io.on('connection', (socket: any) => {
          */
 
         if (room.isStart == true) {
-            console.error("The room is started");
+            console.error("joinRoom | The room is started");
             return;
         }
 
@@ -575,7 +667,7 @@ io.on('connection', (socket: any) => {
     }
 
     function roundStatusChecking(status: string) : string {
-        return `this round is ${status}`
+        return `roundStatusChecking | this round is ${status}`
     }
 
     function findPlayerFromRoom(room: Room, playerId: string) : GamePlayer {
@@ -616,6 +708,7 @@ io.on('connection', (socket: any) => {
 
     function $joinRoom(roomId:string,playerDTO:PlayerDTO) {
         socket.broadcast.to(roomId).emit("$joinRoom", playerDTO);
+        $getRoomId(roomId)
     }
     
 
@@ -625,7 +718,37 @@ io.on('connection', (socket: any) => {
         }
         
     }
+
+    function $leaveRoom() {
+        let socket_user = getHandshakeAuth();
+        console.info(`${socket_user.userName} has leaved the room`)
+        socket.emit("$leaveRoom", socket_user);
+    }
+
+    function $ownerDisconnected(roomId) {
+        console.info(`room ${roomId} is removed `)
+        socket.emit("$ownerDisconnected", roomId);
+    }
+
+    function $getRoomId(roomId) {
+        socket.emit("$getRoomId", roomId);
+    }
+    
+    function getHandshakeAuth() : Player {
+        let query_user = JSON.parse(socket.handshake.query.user)
+        console.log('query',socket.handshake.query);
+        let final_user: Player = { 
+            uniqueId: query_user.uniqueId,
+            socketId: socket.id,
+            userName: query_user.userName
+        }
+        console.log('final',final_user);
+        return final_user;
+    }
+
 })
+
+
 
 
 http.listen(PORT, ():void => {

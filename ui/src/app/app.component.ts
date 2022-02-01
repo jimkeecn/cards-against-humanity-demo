@@ -14,6 +14,7 @@ export class AppComponent {
   constructor(private socketService: SocketService,private route:Router ) {
     socketService.checkMyExist$();
     this.socketService.$404.subscribe(x => { 
+      console.log('$404');
       localStorage.removeItem('user');
       this.route.navigate(['login']);
     });

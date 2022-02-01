@@ -10,7 +10,7 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'roomlist', component: RoomListComponent },
   { path: 'new', component: NewRoomComponent },
-  { path: 'game', component: GameComponent },
+  { path: 'game/:id', component: GameComponent },
   { path: '', redirectTo:'/login' , pathMatch: 'full'},
 ];
 
