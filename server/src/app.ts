@@ -31,9 +31,10 @@ io.on('connection', (socket: any) => {
 
     let query = socket.handshake.query
     let socket_user : Player = query.user
-
+    
     console.log("New player connected : " + socket_user + `, ${socket.id}`);
-
+    console.info(`there are ${active_player_list.length} players`);
+    console.info(`there are ${room_list.length} rooms`);
     socket.emit('myId$', socket.id);
 
     socket.on("checkMyExist$", (id:string) => { 
@@ -89,13 +90,14 @@ io.on('connection', (socket: any) => {
 
 
     socket.on("joinRoom$", (roomId: string) => { 
-        let player = joinRoom(roomId, socket.id);
+        let player = joinRoom(roomId);
         let playerDTO: PlayerDTO = {
             uniqueId: player.uniqueId,
             userName: player.userName
         }
         socket.join(roomId);
         $joinRoom(roomId, playerDTO);
+        console.log(socket_user.userName,roomId)
     })
 
     socket.on("startGame$", () => { 
@@ -241,6 +243,7 @@ io.on('connection', (socket: any) => {
 
         if (winnerOfTheRound.score == 10) {
             //annouce winner of the game..
+            my_room.isFinished = true;
             socket.broadcast.to(my_room.uniqueId).emit("$gameOver", winnerOfTheRound);
         } else {
             roundOver(my_room);
@@ -267,7 +270,8 @@ io.on('connection', (socket: any) => {
             owner: owner,
             isStart: false,
             judge: null,
-            rounds:[]
+            rounds: [],
+            isFinished:false
         }
         return room;
     }
@@ -476,7 +480,7 @@ io.on('connection', (socket: any) => {
         return player.currentDeck;
     }
     
-    function joinRoom(roomId, socketId) {
+    function joinRoom(roomId) {
     
         /**
          * Check room if it is still existed..
@@ -502,7 +506,7 @@ io.on('connection', (socket: any) => {
          * otherwise return the player to the main page and ask to enter a username
          */
         let me = active_player_list.find(x => { 
-            if (x.socketId == socketId.id) {
+            if (x.uniqueId == socket_user.uniqueId) {
                 return x;
             }
         })
@@ -518,7 +522,7 @@ io.on('connection', (socket: any) => {
          * if the player is not in the room, then contirnue join the room.
          */
         let isInRoom = room.activePlayerList.find(x => { 
-            if (x.socketId == socketId) {
+            if (x.uniqueId == socket_user.uniqueId) {
                 return x;
             } 
         })
@@ -533,6 +537,15 @@ io.on('connection', (socket: any) => {
 
          if (room.activePlayerList.length >= room.totalPlayer) {
             console.error("The room is full");
+            return;
+        }
+
+        /**
+         * Check if room is started
+         */
+
+        if (room.isStart == true) {
+            console.error("The room is started");
             return;
         }
 

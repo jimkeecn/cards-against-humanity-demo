@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { SocketService } from '../socket.service';
 
 @Component({
   selector: 'app-game',
@@ -8,9 +9,17 @@ import { Router } from '@angular/router';
 })
 export class GameComponent implements OnInit {
 
-  constructor(public route:Router) { }
+  sys_messages :any[] = [];
+  constructor(public route:Router, private sk:SocketService) { }
 
   ngOnInit(): void {
+    this.sk.$joinRoom.subscribe(x => { 
+      let date = new Date();
+      let hour = date.getHours();
+      let min = date.getMinutes();
+      let message = [`${x.userName} 加入了游戏`, `${hour}:${min}`];
+      this.sys_messages.push(message);
+    })
   }
 
   return(): void{

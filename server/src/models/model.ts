@@ -13,7 +13,8 @@ export class Room {
     owner: Player;
     isStart: boolean;
     judge: Player;
-    rounds:Round[]
+    rounds: Round[];
+    isFinished: boolean = false;
 }
 
 export class RoomInput{

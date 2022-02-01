@@ -19,6 +19,7 @@ export class SocketService {
   $404 = this.socket.fromEvent<any>('$404');
   $createUserName = this.socket.fromEvent<Player>('$createUserName');
   $roomList = this.socket.fromEvent<RoomDTO[]>('$roomList');
+  $joinRoom = this.socket.fromEvent<PlayerDTO>('$joinRoom');
   checkMyExist$() {
     if (this.user) {
       this.socket.emit('checkMyExist$', this.user.uniqueId);
@@ -35,5 +36,9 @@ export class SocketService {
 
   refreshRoom$() {
     this.socket.emit('refreshRoom$');
+  }
+
+  joinRoom$(roomId:string) {
+    this.socket.emit('joinRoom$',roomId)
   }
 }

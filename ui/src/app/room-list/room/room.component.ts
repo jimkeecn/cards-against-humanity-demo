@@ -13,7 +13,7 @@ export class RoomComponent implements OnInit {
   @Input() id:string = "";
   @Input() number: number = 0;
   @Input() total: number = 5;
-  constructor(public route:Router,sk:SocketService) { }
+  constructor(public route:Router,private sk:SocketService) { }
 
   ngOnInit(): void {
   }
@@ -21,6 +21,7 @@ export class RoomComponent implements OnInit {
   join(): void {
     
     console.log(`join game ${this.id}`);
+    this.sk.joinRoom$(this.id);
     this.route.navigate(['game']);
   }
 

@@ -1,3 +1,9 @@
 <div class="return">
     <button mat-stroked-button type="button" (click)="return()"><mat-icon>keyboard_arrow_left</mat-icon>退出当前房间</button>
 </div>
+<div class="system-messager">
+    <div class="message" *ngFor="let msg of sys_messages">
+        <span>{{msg[0]}}</span>
+        <span>{{msg[1]}}</span>
+    </div>
+</div>

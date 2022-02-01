@@ -4,3 +4,20 @@
 .return {
   padding: 12px 20px;
 }
+
+.system-messager {
+  padding: 12px 20px;
+  font-size: 11px;
+  position: absolute;
+  bottom: 44px;
+  height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  border-top: solid 1px #ddd;
+}
+
+.message {
+  display: flex;
+  justify-content: space-between;
+}
