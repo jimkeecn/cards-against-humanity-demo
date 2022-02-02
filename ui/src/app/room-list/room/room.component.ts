@@ -25,7 +25,7 @@ export class RoomComponent implements OnInit {
     this.sk.$getRoomId.pipe(take(1)).subscribe(x => { 
       if (x) {
         console.info(`I have joined room ${x}`);
-        this.route.navigate(['game'], { queryParams: {id:x}});
+        this.route.navigate(['game',x]);
       }
     })
     

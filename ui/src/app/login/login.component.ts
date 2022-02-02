@@ -2,6 +2,9 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '../socket.service';
+import { Socket, SocketIoConfig } from 'ngx-socket-io';
+import { environment } from 'src/environments/environment';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -13,7 +16,9 @@ export class LoginComponent implements OnInit {
     userName: new FormControl("",[Validators.maxLength(10),Validators.required])
   })
 
-  constructor(public route:Router,private socketService: SocketService) { }
+  constructor(public route: Router, private socketService: SocketService,private socket: Socket) { 
+    
+  }
 
   ngOnInit(): void {
   }

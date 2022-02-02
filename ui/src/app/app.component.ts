@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 import { SocketService } from './socket.service';
 
 @Component({
@@ -12,7 +13,7 @@ export class AppComponent {
   socketId: string = "default";
   gameVersion: string = 'v1.0.0';
   constructor(private socketService: SocketService,private route:Router ) {
-    socketService.checkMyExist$();
+    this.socketService.checkMyExist$();
     this.socketService.$404.subscribe(x => { 
       console.log('$404');
       localStorage.removeItem('user');
@@ -23,6 +24,14 @@ export class AppComponent {
       localStorage.removeItem('user');
       localStorage.setItem('user', JSON.stringify(x));
     });
+
+    this.socketService.$forceOut.pipe(take(1)).subscribe(x => { 
+      console.info('force out');
+      if (this.socketService.user) {
+        localStorage.removeItem('user');
+        this.route.navigate(['login']);
+      }
+    })
   }
 
 

@@ -23,12 +23,11 @@ export class SocketService {
   $leaveRoom = this.socket.fromEvent<PlayerDTO>('$leaveRoom');
   $ownerDisconnected = this.socket.fromEvent<string>('$ownerDisconnected');
   $getRoomId = this.socket.fromEvent<string>("$getRoomId");
-
+  $forceOut = this.socket.fromEvent<any>("$forceOut");
   checkMyExist$() {
     if (this.user) {
-      this.socket.emit('checkMyExist$', this.user.uniqueId);
+      this.socket.emit('checkMyExist$');
     }
-    
   }
   createUserName$(userName:string) {
     this.socket.emit('createUserName$',userName)
