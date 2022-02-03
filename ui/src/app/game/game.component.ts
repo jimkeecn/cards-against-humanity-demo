@@ -19,7 +19,7 @@ export class GameComponent implements OnInit {
     this.activeRoute.params.subscribe(x => { 
       this.room_id = x['id'];
     })
-    this.sk.$joinRoom.subscribe(x => { 
+    this.sk.$joinRoom().subscribe(x => { 
       let date = new Date();
       let hour = date.getHours();
       let min = date.getMinutes();
@@ -27,7 +27,7 @@ export class GameComponent implements OnInit {
       this.sys_messages.push(message);
     })
 
-    this.sk.$ownerDisconnected.pipe(take(1)).subscribe(x => { 
+    this.sk.$ownerDisconnected().pipe(take(1)).subscribe(x => { 
       if (x == this.room_id) {
         this.route.navigate(['roomlist']);
       }
@@ -35,6 +35,7 @@ export class GameComponent implements OnInit {
   }
 
   return(): void{
+    this.sk.leaveRoom$(this.room_id);
     this.route.navigate(['roomlist']);
   }
 

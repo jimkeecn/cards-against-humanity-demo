@@ -3,20 +3,27 @@
 import express = require("express");
 import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO, RoomInput } from './models/model';
 import { Server } from "socket.io";
+const cors = require('cors');
 import { createServer } from "http";
 const { v4: uuidv4 } = require('uuid');
 
-const app = express();
 const PORT = process.env.PORT || 8000;
 // app.set("port",PORT);
 // const cors = require('cors');
 // app.use(cors());
 
-let http = require("http").Server(app);
-// let io = require("socket.io")(http);
+const app = express();
 
-//const httpServer = createServer();
-const io = new Server(http, {
+app.use(cors({
+    origin: 'http://localhost:4200'
+}));
+
+app.use(express.urlencoded({extended: true}));
+app.use(express.json()) // To parse the incoming requests with JSON payloads
+
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
   cors: {
     origin: "http://localhost:4200"
   }
@@ -28,28 +35,30 @@ const questions = [];
 const cards = [];
 
 
-io.on('connection', (socket: any) => { 
+io.on('connection', async (socket: any) => { 
 
     let disconnectedCount = 0;
-    // let query_user = socket.handshake.query.user
 
-    // console.log('query',socket.handshake);
-    // let socket_user: Player = { 
-    //     uniqueId: query_user.uniqueId,
-    //     socketId: socket.id,
-    //     userName: query_user.userName
-    //  }
-    getHandshakeAuth().then(x => { 
-        console.log("New player connected : " + JSON.stringify(x) + `, ${socket.id}`);
-    })
+    //await updateSocketToUser();
+
+    async function updateSocketToUser() {
+        let socket_user = await getHandshakeAuth();
+        console.log("New player connected : \n" + JSON.stringify(socket_user) + "\n" +socket.id + "\n");
+        let user = active_player_list.find(x => { 
+            if (x.uniqueId == socket_user.uniqueId) {
+                return x
+            }
+        })
+        if (user) {
+            user.socketId = socket.id;
+        }
+    }
+
     
     console.info(`there are ${active_player_list.length} players`);
     console.info(`there are ${room_list.length} rooms`);
-    socket.emit('myId$', socket.id);
 
     socket.on("disconnect", async (reason) => { 
-        disconnectedCount = disconnectedCount + 1;
-        console.log("disconnect | " +  disconnectedCount);
         let socket_user = await getHandshakeAuth();
         console.info(`disconnect | ${socket_user ? socket_user.userName : socket_user} is disconnected`);
         let room = getMyRoom(socket_user.uniqueId);
@@ -69,16 +78,13 @@ io.on('connection', (socket: any) => {
         }
     })
 
-    socket.on("createUserName$", async (userName: string) => {
-        let player = await InitiatePlayer(userName, socket.id);
-        active_player_list.push(player);
-        console.log(active_player_list);
-        socket.emit('$createUserName',player);
-    });
-
     socket.on("createNewRoom$", async (param:RoomInput) => { 
         //check if I have room already
         let socket_user = await getHandshakeAuth();
+        if (socket_user == null) {
+            socket.emit('$404');
+            return;
+        }
         console.log("createNewRoom$ 1|  " + socket_user + "," + socket_user.uniqueId);
         let myRoom = getMyRoom(socket_user.uniqueId);
 
@@ -143,6 +149,9 @@ io.on('connection', (socket: any) => {
 
     socket.on("leaveRoom$", async (roomId: string) => { 
         let socket_user = await getHandshakeAuth();
+        if (socket_user == null) {
+            socket.emit('$404');
+        }
         room_list.forEach((x, index) => { 
             /**
              * If the owner leave the room. destroy the whole room and
@@ -159,7 +168,7 @@ io.on('connection', (socket: any) => {
              * just make the user leave the room.
              */
             if (x.uniqueId == roomId) {
-                x.activePlayerList.forEach((y, index) => { 
+                 x.activePlayerList.forEach((y, index) => { 
                     if (y.uniqueId == socket_user.uniqueId) {
                         x.activePlayerList.splice(index, 1);
                         socket.leave(x.uniqueId);
@@ -407,15 +416,7 @@ io.on('connection', (socket: any) => {
         }})
     }
 
-    function InitiatePlayer(userName: string, socketId: string) {
-        //create a new player object with unqiue socketId and uniqueId
-        let player: Player = {
-            socketId: socketId,
-            uniqueId: uuidv4(),
-            userName: userName,
-        }
-        return player;
-    }
+   
     
     function startGame(roomId, socketId) {
     
@@ -758,7 +759,7 @@ io.on('connection', (socket: any) => {
     async function getHandshakeAuth(){
         let query_user =  JSON.parse(socket.handshake.query.user)
         console.log('getHandshakeAuth | ' + socket.handshake.query.user);
-          if (query_user !== null) {
+        if (query_user !== null) {
             let final_user: Player = { 
                 uniqueId: query_user.uniqueId,
                 socketId: socket.id,
@@ -766,30 +767,31 @@ io.on('connection', (socket: any) => {
               }
               console.log('final 1| ');
               console.dir(final_user)
-              for (let x = 0; x < active_player_list.length; x++){
-                    console.log('final2 | ' + active_player_list[x].uniqueId)
-                  if (active_player_list[x].uniqueId == final_user.uniqueId) {
-                      console.log('final 2| ');
-                      console.dir(final_user)
-                      return final_user;
-                  } 
-              }
-              console.log('Nonget | ');
-              return { 
-                uniqueId: null,
-                socketId: socket.id,
-                userName: null
-                };
-              
+            //   for (let x = 0; x < active_player_list.length; x++){
+            //         console.log('final2 | ' + active_player_list[x].uniqueId)
+            //       if (active_player_list[x].uniqueId == final_user.uniqueId) {
+            //           console.log('final 2| ');
+            //           console.dir(final_user)
+            //           return final_user;
+            //       } 
+            //   }
+            let player = await active_player_list.find(x => { 
+                if (x.uniqueId == final_user.uniqueId) {
+                    return x;
+                }
+            })
+
+            if (player) {
+                return player;
+            } else {
+                active_player_list.push(final_user);
+                return final_user;
+            }
         }
-          else {
-            console.log('Nonget 2 | ');
-            return { 
-                uniqueId: null,
-                socketId: socket.id,
-                userName: null
-                };
-        }
+
+        console.log('Nonget | ');
+        return null;
+
     }
 
 })
@@ -797,9 +799,48 @@ io.on('connection', (socket: any) => {
 
 
 
-http.listen(PORT, ():void => {
+httpServer.listen(PORT, ():void => {
     console.log(`Server Running here 👉 http://localhost:${PORT}`);
 });
+
+app.post('/newuser', (req, res) => { 
+    console.log('start new user');
+    console.dir( req.body)
+    let username = req.body.userName
+    let player = InitiatePlayer(username);
+    active_player_list.push(player);
+    console.log(active_player_list);
+    res.send(player);
+})
+
+app.post('/checkuser', (req, res) => { 
+    console.log('start check user');
+    console.dir(req.body)
+    let player = active_player_list.find(x => { 
+        if (x.uniqueId == req.body.uniqueId) {
+            return x
+        }
+    });
+    console.dir(player);
+    if (player) {
+        res.send(player);
+    } else {
+        res.send(null);
+    }
+})
+
+
+function InitiatePlayer(userName: string) {
+    //create a new player object with unqiue socketId and uniqueId
+    let player: Player = {
+        socketId: null,
+        uniqueId: uuidv4(),
+        userName: userName,
+    }
+    return player;
+}
+
+
   
 
 

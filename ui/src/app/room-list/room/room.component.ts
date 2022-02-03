@@ -22,7 +22,7 @@ export class RoomComponent implements OnInit {
   join(): void {
     console.log(`join game ${this.id}`);
     this.sk.joinRoom$(this.id);
-    this.sk.$getRoomId.pipe(take(1)).subscribe(x => { 
+    this.sk.$getRoomId().pipe(take(1)).subscribe(x => { 
       if (x) {
         console.info(`I have joined room ${x}`);
         this.route.navigate(['game',x]);

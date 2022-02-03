@@ -13,7 +13,7 @@ export class RoomListComponent implements OnInit {
   roomList: RoomDTO[] = [];
   refreshing: boolean = false;
   constructor(public route: Router, private sk: SocketService) { 
-    sk.$roomList.subscribe(x => { 
+    sk.$roomList().subscribe(x => { 
       console.log('roomList', x);
       this.roomList = [...x];
     })

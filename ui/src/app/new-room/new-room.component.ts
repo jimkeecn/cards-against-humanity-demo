@@ -25,7 +25,7 @@ export class NewRoomComponent implements OnInit,OnDestroy {
     console.log(this.roomForm.value);
     if (this.roomForm.valid) {
       this.sk.createNewRoom$(this.roomForm.value)
-      this.sk.$getRoomId.pipe(take(1)).subscribe(x => { 
+      this.sk.$getRoomId().pipe(take(1)).subscribe(x => { 
         if (x) {
           console.info(`I have created room ${x}`);
           this.route.navigate(['/game',x]);
