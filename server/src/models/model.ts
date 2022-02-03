@@ -1,4 +1,3 @@
-import { stringify } from "querystring";
 
 export class Room {
     name: string;
@@ -28,6 +27,7 @@ export class RoomDTO {
     activePlayer: number;
     activePlayerList: GamePlayer[];
     name: string;
+    owner: Player;
 }
 
 export class Player {

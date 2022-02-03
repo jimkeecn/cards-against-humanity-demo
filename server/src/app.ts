@@ -179,36 +179,12 @@ io.on('connection', async (socket: any) => {
         })
     })
 
-    async function leaveRoom(roomId) {
-        let socket_user = await getHandshakeAuth();
-        room_list.forEach((x, index) => { 
-            /**
-             * If the owner leave the room. destroy the whole room and
-             * make all socket leave the room
-             */
-            if (x.owner.uniqueId == socket_user.uniqueId) {
-                console.log("owner leaves room")
-                room_list.splice(index, 1);
-                $ownerDisconnected(x.uniqueId);
-                io.socketsLeave(x.uniqueId);
-            }
-
-            /**
-             * If not the owner leave the room. 
-             * just make the user leave the room.
-             */
-            if (x.uniqueId == roomId) {
-                 x.activePlayerList.forEach((y, index) => { 
-                    if (y.uniqueId == socket_user.uniqueId) {
-                        console.log("player leaves room")
-                        x.activePlayerList.splice(index, 1);
-                        socket.leave(x.uniqueId);
-                        $leaveRoom();
-                    }
-                })
-            }
-        })
-    }
+    socket.on("getRoomDetail$", async (roomId: string) => { 
+        let dto = await getRoomDTO(roomId);
+        if (dto) {
+            socket.emit("$getRoomDetail",dto)
+        } 
+    })
 
     socket.on("startGame$", () => { 
         var room = getMyRoom(socket.id);
@@ -252,9 +228,6 @@ io.on('connection', async (socket: any) => {
         
     })
 
-    socket.on("startGameRound$", () => { 
-        
-    })
 
     /**
      * need to impletement something to avoid server pressure on unlimited pick API call..
@@ -386,23 +359,6 @@ io.on('connection', async (socket: any) => {
         return room;
     }
     
-    function getAvailableGameDTO() {
-        let room_list_DTO = [];
-        room_list.forEach(x => { 
-            let dto:RoomDTO = {
-                uniqueId: x.uniqueId,
-                totalPlayer: x.totalPlayer,
-                activePlayer: x.activePlayer,
-                activePlayerList: [...x.activePlayerList],
-                name:x.name
-            }
-
-            room_list_DTO.push(dto);
-        })
-        console.log(room_list_DTO);
-        return room_list_DTO;
-    }
-    
     function getMyDetail() {
         return active_player_list.find(x => {if(x.socketId == socket.id) {
             return x
@@ -416,7 +372,36 @@ io.on('connection', async (socket: any) => {
         }})
     }
 
-   
+    async function leaveRoom(roomId) {
+        let socket_user = await getHandshakeAuth();
+        room_list.forEach((x, index) => { 
+            /**
+             * If the owner leave the room. destroy the whole room and
+             * make all socket leave the room
+             */
+            if (x.owner.uniqueId == socket_user.uniqueId) {
+                console.log("owner leaves room")
+                room_list.splice(index, 1);
+                $ownerDisconnected(x.uniqueId);
+                io.socketsLeave(x.uniqueId);
+            }
+
+            /**
+             * If not the owner leave the room. 
+             * just make the user leave the room.
+             */
+            if (x.uniqueId == roomId) {
+                 x.activePlayerList.forEach((y, index) => { 
+                    if (y.uniqueId == socket_user.uniqueId) {
+                        console.log("player leaves room")
+                        x.activePlayerList.splice(index, 1);
+                        socket.leave(x.uniqueId);
+                        $leaveRoom();
+                    }
+                })
+            }
+        })
+    }
     
     function startGame(roomId, socketId) {
     
@@ -831,6 +816,47 @@ function InitiatePlayer(userName: string) {
         userName: userName,
     }
     return player;
+}
+
+function getAvailableGameDTO() {
+    let room_list_DTO = [];
+    room_list.forEach(x => { 
+        let dto:RoomDTO = {
+            uniqueId: x.uniqueId,
+            totalPlayer: x.totalPlayer,
+            activePlayer: x.activePlayer,
+            activePlayerList: [...x.activePlayerList],
+            name: x.name,
+            owner: x.owner
+        }
+
+        room_list_DTO.push(dto);
+    })
+    console.log(room_list_DTO);
+    return room_list_DTO;
+}
+
+async function getRoomDTO(roomId) {
+    if (room_list.length > 0) {
+        let room = await room_list.find(x => {
+            if (x.uniqueId == roomId) {
+                return x;
+            }
+        });
+    
+        let dto: RoomDTO = {
+            uniqueId: room.uniqueId,
+            totalPlayer: room.totalPlayer,
+            activePlayer: room.activePlayer,
+            activePlayerList: [...room.activePlayerList],
+            name: room.name,
+            owner: room.owner
+        };
+    
+        return dto;
+    }
+    
+    return null;
 }
 
 

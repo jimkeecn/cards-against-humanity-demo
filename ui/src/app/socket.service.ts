@@ -16,7 +16,12 @@ export class SocketService {
   socket = io(environment.url, { forceNew: true, query: { user : this.user_string}})
 
   constructor( private route: Router) { 
-    
+    this.socket.on('disconnect', () => { 
+      let confirm = window.confirm("you have been disconnected from the server, confirm to reconnect");
+      if (confirm) {
+        this.connect();
+      }
+    })
   }
 
 
@@ -24,6 +29,7 @@ export class SocketService {
 
   connect() :void {
     let user_string = localStorage.getItem('user');
+    console.log(user_string);
     this.socket = io(environment.url, { forceNew: true, query: { user : user_string}})
   }
 
@@ -51,6 +57,9 @@ export class SocketService {
     this.socket.emit('leaveRoom$',roomId)
   }
 
+  getRoomDetail$(roomId: string): void{
+    this.socket.emit('getRoomDetail$',roomId)
+  }
 
   /**on */
   // $200 = this.socket.fromEvent<any>('$200');
@@ -101,6 +110,14 @@ export class SocketService {
       this.socket.on('$forceOut', (data: any) => observer.next(data));
     })
   }
+
+  //$getRoomDetail
+  $getRoomDetail(): Observable<RoomDTO>{
+    return new Observable<RoomDTO>(observer => {
+      this.socket.on('$getRoomDetail', (data: RoomDTO) => observer.next(data));
+    })
+  }
+
 
 
 }

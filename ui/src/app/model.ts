@@ -1,3 +1,4 @@
+
 export class Room {
     name: string;
     uniqueId: string;
@@ -11,7 +12,8 @@ export class Room {
     owner: Player;
     isStart: boolean;
     judge: Player;
-    rounds:Round[]
+    rounds: Round[];
+    isFinished: boolean = false;
 }
 
 export class RoomInput{
@@ -25,6 +27,7 @@ export class RoomDTO {
     activePlayer: number;
     activePlayerList: GamePlayer[];
     name: string;
+    owner: Player;
 }
 
 export class Player {
