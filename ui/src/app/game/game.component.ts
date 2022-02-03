@@ -28,6 +28,7 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$ownerDisconnected().pipe(take(1)).subscribe(x => { 
+      console.log('ownerDisconnected' + x);
       if (x == this.room_id) {
         this.route.navigate(['roomlist']);
       }

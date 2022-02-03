@@ -749,7 +749,7 @@ io.on('connection', async (socket: any) => {
 
     function $ownerDisconnected(roomId) {
         console.info(`room ${roomId} is removed `)
-        socket.emit("$ownerDisconnected", roomId);
+        socket.to(roomId).emit("$ownerDisconnected", roomId);
     }
 
     function $getRoomId(roomId) {
@@ -766,15 +766,8 @@ io.on('connection', async (socket: any) => {
                 userName: query_user.userName
               }
               console.log('final 1| ');
-              console.dir(final_user)
-            //   for (let x = 0; x < active_player_list.length; x++){
-            //         console.log('final2 | ' + active_player_list[x].uniqueId)
-            //       if (active_player_list[x].uniqueId == final_user.uniqueId) {
-            //           console.log('final 2| ');
-            //           console.dir(final_user)
-            //           return final_user;
-            //       } 
-            //   }
+            console.dir(final_user)
+            
             let player = await active_player_list.find(x => { 
                 if (x.uniqueId == final_user.uniqueId) {
                     return x;
