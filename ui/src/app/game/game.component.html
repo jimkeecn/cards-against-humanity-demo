@@ -1,7 +1,7 @@
 <div class="return">
     <button mat-stroked-button type="button" (click)="return()"><mat-icon>keyboard_arrow_left</mat-icon>退出当前房间</button>
 
-    <button mat-stroked-button type="button" *ngIf="is_owner"><mat-icon>keyboard_arrow_right</mat-icon>开始</button>
+    <button mat-stroked-button type="button" *ngIf="is_owner" (click)="start()"><mat-icon>keyboard_arrow_right</mat-icon>开始</button>
 </div>
 <div class="system-messager">
     <div class="message" *ngFor="let msg of sys_messages">

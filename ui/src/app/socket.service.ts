@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';  
 import { map, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { Player, PlayerDTO, RoomDTO, RoomInput } from './model';
+import { Card, Player, PlayerDTO, Question, RoomDTO, RoomInput } from './model';
 import { io } from "socket.io-client";
 
 @Injectable({
@@ -59,6 +59,22 @@ export class SocketService {
 
   getRoomDetail$(roomId: string): void{
     this.socket.emit('getRoomDetail$',roomId)
+  }
+
+  startGame$(roomId): void{
+    this.socket.emit('startGame$',roomId);
+  }
+
+  selectACard$(cardId:string): void{
+    this.socket.emit('selectACard$',cardId)
+  }
+
+  pickACard$(cardId: string): void{
+    this.socket.emit('pickACard$',cardId)
+  }
+
+  initCards$(): void{
+    this.socket.emit('initCards$');
   }
 
   /**on */
@@ -118,6 +134,34 @@ export class SocketService {
     })
   }
 
+  $pickJudge(): Observable<PlayerDTO>{
+    return new Observable<PlayerDTO>(observer => {
+      this.socket.on('$pickJudge', (data: PlayerDTO) => observer.next(data));
+    })
+  }
 
+  $initCards(): Observable<Card[]>{
+    return new Observable<Card[]>(observer => {
+      this.socket.on('$initCards', (data: Card[]) => observer.next(data));
+    })
+  }
+
+  $currentQuestion(): Observable<Question>{
+    return new Observable<Question>(observer => {
+      this.socket.on('$currentQuestion', (data: Question) => observer.next(data));
+    })
+  }
+
+  $startRound(): Observable<any>{
+    return new Observable<any>(observer => {
+      this.socket.on('$startRound', (data: any) => observer.next(data));
+    })
+  }
+
+  $errors(): Observable<any>{
+    return new Observable<any>(observer => {
+      this.socket.on('$errors', (data: any) => observer.next(data));
+    })
+  }
 
 }

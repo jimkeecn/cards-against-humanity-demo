@@ -25,10 +25,7 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$joinRoom().subscribe(x => { 
-      let date = new Date();
-      let hour = date.getHours();
-      let min = date.getMinutes();
-      let message = [`${x.userName} 加入了游戏`, `${hour}:${min}`];
+      let message = [`${x.userName} 加入了游戏`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
     })
 
@@ -50,6 +47,28 @@ export class GameComponent implements OnInit {
       }
     })
 
+    this.sk.$pickJudge().subscribe(x => { 
+      let message = [`裁判指定为：${x.userName}`, `${this.getImmediateDate()}`];
+      this.sys_messages.push(message);
+    })
+
+
+    this.sk.$currentQuestion().subscribe(x => { 
+      let message = [`当前问题： ${x.content}`, `${this.getImmediateDate()}`];
+      this.sys_messages.push(message);
+    })
+
+    this.sk.$startRound().pipe(take(1)).subscribe(x => { 
+      if (x) {
+        let message = [`比赛开始了`,`${this.getImmediateDate()}`];
+        this.sys_messages.push(message);
+        this.sk.initCards$();
+      }
+    })
+
+    this.sk.$initCards().subscribe(x => { 
+      console.dir(x);
+    })
   }
 
   return(): void{
@@ -57,4 +76,19 @@ export class GameComponent implements OnInit {
     this.route.navigate(['roomlist']);
   }
 
+  start(): void{
+    if (this.is_owner) {
+      this.sk.startGame$(this.room_id)
+    } else {
+      alert('you do not have permission to do that.');
+    }
+    
+  }
+
+  private getImmediateDate() {
+    let date = new Date();
+    let hour = date.getHours();
+    let min = date.getMinutes();
+    return  `${hour}:${min}`;
+  }
 }

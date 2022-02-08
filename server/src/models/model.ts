@@ -28,7 +28,11 @@ export class RoomDTO {
     activePlayerList: GamePlayer[];
     name: string;
     owner: Player;
+    isStart: boolean;
+    isFinished: boolean = false;
+    rounds: Round[];
 }
+
 
 export class Player {
     socketId: string;
