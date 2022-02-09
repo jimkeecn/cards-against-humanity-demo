@@ -32,7 +32,7 @@ export class GameComponent implements OnInit {
     this.sk.$getRoomDetail().subscribe(x => { 
       console.log('$getRoomDetail |' + JSON.stringify(x));
       this.room = x;
-      let current_user = JSON.parse(this.sk.user_string);
+      let current_user = this.sk.getLocalUser();
       if (current_user.uniqueId == this.room.owner.uniqueId) {
         this.is_owner = true;
       } else {

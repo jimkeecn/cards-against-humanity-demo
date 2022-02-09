@@ -1,11 +1,6 @@
 <div class="return">
-    <button mat-stroked-button type="button" (click)="return()"><mat-icon>keyboard_arrow_left</mat-icon>退出当前房间</button>
-
-    <button mat-stroked-button type="button" *ngIf="is_owner" (click)="start()"><mat-icon>keyboard_arrow_right</mat-icon>开始</button>
+    <mat-icon (click)="return()">keyboard_backspace</mat-icon>
+    <button type="button" class="player-list-button">玩家列表</button>
 </div>
-<div class="system-messager">
-    <div class="message" *ngFor="let msg of sys_messages">
-        <span>{{msg[0]}}</span>
-        <span>{{msg[1]}}</span>
-    </div>
-</div>
+<begin *ngIf="is_owner && !room.isStart" [isOwner]="is_owner" [roomId]="room_id"></begin>
+<messager></messager>

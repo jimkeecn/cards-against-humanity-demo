@@ -62,8 +62,9 @@ io.on('connection', async (socket: any) => {
         let socket_user = await getHandshakeAuth();
         console.info(`disconnect | ${socket_user ? socket_user.userName : socket_user} is disconnected`);
         let room = getMyRoom(socket_user.uniqueId);
-        console.info('disconnect room |' + room);
-        if (room) {
+       
+        if (room && room.isStart == false) {
+            console.info('disconnect room |' + room);
             await leaveRoom(room.uniqueId);
         }
     })
@@ -72,8 +73,10 @@ io.on('connection', async (socket: any) => {
         console.log("checkMyExist$");
         let player = await getMyDetailByUniqueId();
         if (player == null) {
+            console.log('$404');
             socket.emit('$404');
         } else {
+            console.log('$200');
             socket.emit('$200',player);
         }
     })
@@ -138,6 +141,9 @@ io.on('connection', async (socket: any) => {
 
         let socket_user = await getHandshakeAuth();
         let player = await joinRoom(roomId);
+        if (player == null) {
+            return;
+        }
         let playerDTO: PlayerDTO = {
             uniqueId: player.uniqueId,
             userName: player.userName
@@ -384,9 +390,14 @@ io.on('connection', async (socket: any) => {
 
     async function getMyDetailByUniqueId() {
         let user = await getHandshakeAuth()
-        return active_player_list.find(x => {if(x.uniqueId == user.uniqueId) {
-            return x
-        }})
+        if (user) {
+            return active_player_list.find(x => {if(x.uniqueId == user.uniqueId) {
+                return x
+            }})
+        } else {
+            return null
+        }
+        
     }
 
     async function leaveRoom(roomId) {
@@ -606,7 +617,7 @@ io.on('connection', async (socket: any) => {
     
         if (room == null) {
             console.error("joinRoom | Cannot find a game to join");
-            return;
+            return null;
         }
     
       
@@ -623,7 +634,7 @@ io.on('connection', async (socket: any) => {
     
         if (me == null) {
             console.error("joinRoom | Cannot find the player");
-            return;
+            return null;
         }
     
         /**
@@ -647,7 +658,7 @@ io.on('connection', async (socket: any) => {
 
          if (room.activePlayerList.length >= room.totalPlayer) {
             console.error("joinRoom | The room is full");
-            return;
+            return null;
         }
 
         /**
@@ -656,7 +667,7 @@ io.on('connection', async (socket: any) => {
 
         if (room.isStart == true) {
             console.error("joinRoom | The room is started");
-            return;
+            return null;
         }
 
         /**
@@ -808,6 +819,9 @@ io.on('connection', async (socket: any) => {
 
     }
 
+    function $goToRoomList() {
+        socket.emit("$goToRoomList");
+    }
 })
 
 

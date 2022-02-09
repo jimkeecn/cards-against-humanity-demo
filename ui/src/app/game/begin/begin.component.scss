@@ -1,0 +1,27 @@
+:host {
+  position: relative;
+  height: calc(100% - 50px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.begin-game-button {
+  width: 319px;
+  height: 63px;
+  background-color: #241c1c;
+  color: #e5e5e5;
+  font-size: 24px;
+  font-weight: 600;
+  border-radius: 27px;
+}
+
+.check-rule {
+  font-size: 13px;
+  margin-top: 20px;
+  color: #241c1c;
+  font-weight: 600;
+  text-decoration: underline;
+}

@@ -55,6 +55,8 @@ import { NewRoomComponent } from './new-room/new-room.component';
 import { GameComponent } from './game/game.component';
 import { Player } from './model';
 import { HttpClientModule } from '@angular/common/http';
+import { BeginComponent } from './game/begin/begin.component';
+import { MessagerComponent } from './game/messager/messager.component';
 
 
 @NgModule({
@@ -64,7 +66,9 @@ import { HttpClientModule } from '@angular/common/http';
     RoomListComponent,
     RoomComponent,
     NewRoomComponent,
-    GameComponent
+    GameComponent,
+    BeginComponent,
+    MessagerComponent
   ],
   imports: [
     BrowserModule,

@@ -17,15 +17,41 @@ export class SocketService {
 
   constructor( private route: Router) { 
     this.socket.on('disconnect', () => { 
-      let confirm = window.confirm("you have been disconnected from the server, confirm to reconnect");
-      if (confirm) {
-        this.connect();
-      }
+      // let confirm = window.confirm("you have been disconnected from the server, Please refresh");
+      // if (confirm) {
+      //   this.connect();
+      // }
+
+      this.connect();
+    })
+
+    this.socket.on('$200', () => { 
+      let href = this.route.url;
+      if (href.includes('login')) {
+        this.route.navigate(['roomlist'])
+      } 
+    })
+
+    this.socket.on('$404', () => { 
+      localStorage.removeItem('user');
+      this.route.navigate(['login'])
+    })
+
+    this.socket.on('$goToRoomList', () => { 
+      this.route.navigate(['roomlist'])
     })
   }
 
 
 
+  getLocalUser(): Player{
+    let user = localStorage.getItem('user');
+    if (user) {
+      return JSON.parse(user);
+    } else {
+      return null;
+    }
+  }
 
   connect() :void {
     let user_string = localStorage.getItem('user');
@@ -36,9 +62,7 @@ export class SocketService {
   /**emit */
 
   checkMyExist$():void {
-    if (this.user) {
-      this.socket.emit('checkMyExist$');
-    }
+    this.socket.emit('checkMyExist$');
   }
 
   createNewRoom$(room: RoomInput) :void{
@@ -76,6 +100,8 @@ export class SocketService {
   initCards$(): void{
     this.socket.emit('initCards$');
   }
+
+
 
   /**on */
   // $200 = this.socket.fromEvent<any>('$200');
