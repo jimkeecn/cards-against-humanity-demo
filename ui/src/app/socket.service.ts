@@ -134,6 +134,14 @@ export class SocketService {
       this.socket.on('$leaveRoom', (data: PlayerDTO) => observer.next(data));
     })
   }
+
+  // $leaveRoom = this.socket.fromEvent<PlayerDTO>('$leaveRoom');
+  $SomeoneleaveRoom(): Observable<PlayerDTO>{
+    return new Observable<PlayerDTO>(observer => {
+      this.socket.on('$SomeoneleaveRoom', (data: PlayerDTO) => observer.next(data));
+    })
+  }
+
   // $ownerDisconnected = this.socket.fromEvent<string>('$ownerDisconnected');
   $ownerDisconnected(): Observable<string>{
     return new Observable<string>(observer => {

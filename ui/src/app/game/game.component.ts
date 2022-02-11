@@ -29,6 +29,14 @@ export class GameComponent implements OnInit {
       let message = [`${x.userName} 加入了游戏`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
       this.$sys_messages.next(message);
+      this.sk.getRoomDetail$(this.room_id);
+    })
+
+    this.sk.$SomeoneleaveRoom().subscribe(x => { 
+      let message = [`${x.userName} 退出了游戏`, `${this.getImmediateDate()}`];
+      this.sys_messages.push(message);
+      this.$sys_messages.next(message);
+      this.sk.getRoomDetail$(this.room_id);
     })
 
     this.sk.$getRoomDetail().subscribe(x => { 

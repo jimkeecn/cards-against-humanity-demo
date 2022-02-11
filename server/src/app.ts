@@ -179,7 +179,7 @@ io.on('connection', async (socket: any) => {
                     if (y.uniqueId == socket_user.uniqueId) {
                         x.activePlayerList.splice(index, 1);
                         socket.leave(x.uniqueId);
-                        $leaveRoom();
+                        $leaveRoom(roomId);
                     }
                 })
             }
@@ -424,7 +424,7 @@ io.on('connection', async (socket: any) => {
                         console.log("player leaves room")
                         x.activePlayerList.splice(index, 1);
                         socket.leave(x.uniqueId);
-                        $leaveRoom();
+                        $leaveRoom(roomId);
                     }
                 })
             }
@@ -773,10 +773,11 @@ io.on('connection', async (socket: any) => {
         
     }
 
-    async function $leaveRoom() {
+    async function $leaveRoom(roomId) {
         let socket_user = await getHandshakeAuth();
         console.info(`${socket_user.userName} has leaved the room`)
         socket.emit("$leaveRoom", socket_user);
+        io.to(roomId).emit("$SomeoneleaveRoom", socket_user);
     }
 
     function $ownerDisconnected(roomId) {

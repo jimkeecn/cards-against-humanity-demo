@@ -10,6 +10,8 @@ export class BeginComponent implements OnInit {
 
   @Input() isOwner: boolean = false;
   @Input() roomId: string;
+  @Input() max: number = 5;
+  @Input() number: number = 1;
   constructor(private sk : SocketService) { }
 
   ngOnInit(): void {

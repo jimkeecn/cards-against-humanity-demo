@@ -2,5 +2,5 @@
     <mat-icon (click)="return()">keyboard_backspace</mat-icon>
     <button type="button" class="player-list-button">玩家列表</button>
 </div>
-<begin *ngIf="is_owner && !room.isStart" [isOwner]="is_owner" [roomId]="room_id"></begin>
+<begin *ngIf="is_owner && !room.isStart" [isOwner]="is_owner" [roomId]="room_id" [max]="room.totalPlayer" [number]="room.activePlayerList.length"></begin>
 <messager [messages]="sys_messages"></messager>
