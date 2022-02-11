@@ -1,18 +1,14 @@
 .messager {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
+  position: absolute;
+  top: 0px;
+  right: calc(50% - 16.5px);
   width: 33px;
   height: 33px;
-  background-color: #fff;
-  border-radius: 16.5px;
   padding: 0;
   margin: 0;
-  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
   font-size: 33px;
   color: #241c1c;
   display: block;
-  transition: bottom 0.2s linear;
 }
 
 .messager.active {
@@ -30,7 +26,7 @@
   position: fixed;
   width: 100%;
   height: 200px;
-  bottom: -200px;
+  bottom: -170px;
   left: 0;
   padding: 20px;
   overflow-y: auto;
@@ -40,6 +36,7 @@
   flex-direction: column;
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
+  transition: bottom 0.2s linear;
 }
 
 .message-dialog.active {
