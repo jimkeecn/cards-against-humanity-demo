@@ -57,6 +57,7 @@ import { Player } from './model';
 import { HttpClientModule } from '@angular/common/http';
 import { BeginComponent } from './game/begin/begin.component';
 import { MessagerComponent } from './game/messager/messager.component';
+import { PlayerListComponent } from './game/player-list/player-list.component';
 
 
 @NgModule({
@@ -68,7 +69,8 @@ import { MessagerComponent } from './game/messager/messager.component';
     NewRoomComponent,
     GameComponent,
     BeginComponent,
-    MessagerComponent
+    MessagerComponent,
+    PlayerListComponent
   ],
   imports: [
     BrowserModule,

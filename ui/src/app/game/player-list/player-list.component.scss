@@ -1,0 +1,74 @@
+.player-list-button {
+  width: 83px;
+  height: 30px;
+  background-color: #f7f7f7;
+  border: none;
+  border-radius: 13px;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
+  color: #241c1c;
+  font-weight: 600;
+}
+
+.player-list-container {
+  position: fixed;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  overflow-y: auto;
+  background-color: #f7f7f7;
+  padding: 0 28px 20px 28px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
+  transition: top 0.2s linear;
+}
+
+.player-list-container.active {
+  top: 0;
+}
+
+.player-list-header {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+.player-list-header .mat-icon {
+  font-size: 50px;
+  margin-right: 12px;
+  margin-bottom: 20px;
+}
+
+.player-list-number {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.player-list-table {
+  position: relative;
+  width: 100%;
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.player-list-table thead {
+  color: #575353;
+}
+.player-list-table td {
+  height: 25px;
+}
+
+.player-list-table td:last-child {
+  width: 50px;
+  text-align: right;
+}

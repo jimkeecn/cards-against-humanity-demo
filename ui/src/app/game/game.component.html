@@ -1,6 +1,12 @@
 <div class="return">
     <mat-icon (click)="return()">keyboard_backspace</mat-icon>
-    <button type="button" class="player-list-button">玩家列表</button>
+    <player-list 
+    [max]="room?.totalPlayer" 
+    [number]="room?.activePlayerList.length"
+    [players]="room?.activePlayerList"
+    ></player-list>
 </div>
-<begin *ngIf="is_owner && !room.isStart" [isOwner]="is_owner" [roomId]="room_id" [max]="room.totalPlayer" [number]="room.activePlayerList.length"></begin>
+<begin *ngIf="is_owner && !room.isStart" 
+[isOwner]="is_owner" [roomId]="room_id" 
+[max]="room.totalPlayer" [number]="room.activePlayerList.length"></begin>
 <messager [messages]="sys_messages"></messager>

@@ -1,0 +1,23 @@
+<button type="button" class="player-list-button"  (click)="isActive = !isActive">玩家列表</button>
+<div class="player-list-container" [ngClass]="{active:isActive}">
+    <div class="player-list-header">
+        <mat-icon  (click)="isActive = !isActive">arrow_drop_up</mat-icon>
+    </div>
+    <div class="player-list-number">
+        玩家总数    {{number}}/{{max}}
+    </div>
+    <table class="player-list-table">
+        <thead>
+            <tr>
+                <td>当前玩家</td>
+                <td>得分</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let player of players">
+                <td>{{player.userName}}</td>
+                <td>{{player.score}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
