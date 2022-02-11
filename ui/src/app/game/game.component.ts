@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { take } from 'rxjs';
+import { Subject, take } from 'rxjs';
 import { RoomDTO } from '../model';
 import { SocketService } from '../socket.service';
 
@@ -12,6 +12,7 @@ import { SocketService } from '../socket.service';
 export class GameComponent implements OnInit {
 
   sys_messages: any[] = [];
+  $sys_messages : Subject<any[]> = new Subject();
   room_id: string = "";
   is_owner: boolean = false;
   room: RoomDTO;
@@ -27,6 +28,7 @@ export class GameComponent implements OnInit {
     this.sk.$joinRoom().subscribe(x => { 
       let message = [`${x.userName} 加入了游戏`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
+      this.$sys_messages.next(message);
     })
 
     this.sk.$getRoomDetail().subscribe(x => { 

@@ -3,4 +3,4 @@
     <button type="button" class="player-list-button">玩家列表</button>
 </div>
 <begin *ngIf="is_owner && !room.isStart" [isOwner]="is_owner" [roomId]="room_id"></begin>
-<messager></messager>
+<messager [messages]="sys_messages"></messager>
