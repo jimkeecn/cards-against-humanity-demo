@@ -6,7 +6,17 @@
     [players]="room?.activePlayerList"
     ></player-list>
 </div>
-<begin *ngIf="is_owner && !room.isStart" 
+
+<div class="body" *ngIf="is_start">
+    <div class="header">
+        <judge [userName]="current_judge"></judge>
+    </div>
+    <div class="content">
+
+    </div>
+</div>
+
+<begin *ngIf="is_owner && !is_start" 
 [isOwner]="is_owner" [roomId]="room_id" 
 [max]="room.totalPlayer" [number]="room.activePlayerList.length"></begin>
 <messager [messages]="sys_messages"></messager>

@@ -15,7 +15,10 @@ export class GameComponent implements OnInit {
   $sys_messages : Subject<any[]> = new Subject();
   room_id: string = "";
   is_owner: boolean = false;
+  is_start: boolean = false;
   room: RoomDTO;
+  current_judge: string = null;
+  current_question: string = null;
   constructor(public route:Router, private sk:SocketService, private activeRoute : ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -32,7 +35,7 @@ export class GameComponent implements OnInit {
       this.sk.getRoomDetail$(this.room_id);
     })
 
-    this.sk.$SomeoneleaveRoom().subscribe(x => { 
+    this.sk.$someoneleaveRoom().subscribe(x => { 
       let message = [`${x.userName} 退出了游戏`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
       this.$sys_messages.next(message);
@@ -40,9 +43,12 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$getRoomDetail().subscribe(x => { 
+      debugger;
       console.log('$getRoomDetail |' + JSON.stringify(x));
       this.room = x;
+      this.is_start = this.room?.isStart;
       let current_user = this.sk.getLocalUser();
+      this.setRoomDetail();
       if (current_user.uniqueId == this.room.owner.uniqueId) {
         this.is_owner = true;
       } else {
@@ -60,12 +66,14 @@ export class GameComponent implements OnInit {
     this.sk.$pickJudge().subscribe(x => { 
       let message = [`裁判指定为：${x.userName}`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
+      this.current_judge = x.userName;
     })
 
 
     this.sk.$currentQuestion().subscribe(x => { 
       let message = [`当前问题： ${x.content}`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
+      this.current_question = x.content;
     })
 
     this.sk.$startRound().pipe(take(1)).subscribe(x => { 
@@ -73,6 +81,7 @@ export class GameComponent implements OnInit {
         let message = [`比赛开始了`,`${this.getImmediateDate()}`];
         this.sys_messages.push(message);
         this.sk.initCards$();
+        this.is_start = true;
       }
     })
 
@@ -100,5 +109,18 @@ export class GameComponent implements OnInit {
     let hour = date.getHours();
     let min = date.getMinutes();
     return  `${hour}:${min}`;
+  }
+
+  getJudge() {
+    let current_round = this.room.rounds[this.room.rounds.length - 1];
+    this.current_judge = current_round.judge.userName;
+  }
+
+  private setRoomDetail() {
+    let current_round = this.room?.rounds[this.room.rounds.length - 1];
+    if (current_round) {
+      this.current_judge = current_round.judge.userName;
+      this.current_question = current_round.question.content;
+    }
   }
 }

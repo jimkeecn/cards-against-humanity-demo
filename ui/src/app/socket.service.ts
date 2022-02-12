@@ -136,9 +136,9 @@ export class SocketService {
   }
 
   // $leaveRoom = this.socket.fromEvent<PlayerDTO>('$leaveRoom');
-  $SomeoneleaveRoom(): Observable<PlayerDTO>{
+  $someoneleaveRoom(): Observable<PlayerDTO>{
     return new Observable<PlayerDTO>(observer => {
-      this.socket.on('$SomeoneleaveRoom', (data: PlayerDTO) => observer.next(data));
+      this.socket.on('$someoneleaveRoom', (data: PlayerDTO) => observer.next(data));
     })
   }
 

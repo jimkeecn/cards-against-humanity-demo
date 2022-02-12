@@ -1,3 +1,26 @@
+.message-dialog {
+  position: fixed;
+  width: 100%;
+  height: 200px;
+  bottom: -170px;
+  left: 0;
+  padding: 30px 20px 20px 20px;
+  overflow-y: auto;
+  background-color: #fff;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  transition: bottom 0.2s linear;
+  z-index: 999;
+}
+
+.message-dialog.active {
+  bottom: 0px;
+  transition: bottom 0.2s ease;
+}
+
 .messager {
   position: absolute;
   top: 0px;
@@ -20,28 +43,6 @@
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   perspective: 1000px;
-}
-
-.message-dialog {
-  position: fixed;
-  width: 100%;
-  height: 200px;
-  bottom: -170px;
-  left: 0;
-  padding: 20px;
-  overflow-y: auto;
-  background-color: #fff;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
-  transition: bottom 0.2s linear;
-}
-
-.message-dialog.active {
-  bottom: 0px;
-  transition: bottom 0.2s ease;
 }
 
 .message {

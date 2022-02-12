@@ -25,18 +25,13 @@
 
 .body {
   position: relative;
-  height: calc(100% - 50px);
+  height: calc(100% - 100px);
   width: 100%;
 }
 
-.body .begin-game-button {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 319px;
-  height: 63px;
-  background-color: #241c1c;
-  color: #e5e5e5;
+.body .header {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
 }

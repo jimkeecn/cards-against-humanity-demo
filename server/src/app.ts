@@ -213,7 +213,8 @@ io.on('connection', async (socket: any) => {
         }
         //Set the first judge and broadcast to everyone in the game
         var judge = pickFirstJudge(room);
-
+        //get the first question
+        var first_question= getRandomQuestion(room);
         room.rounds.push({
             index: 1,
             question: first_question,
@@ -232,8 +233,7 @@ io.on('connection', async (socket: any) => {
         }, 1000)
         
 
-        //get the first question
-        var first_question= getRandomQuestion(room);
+      
         setTimeout(() => { 
             $currentQuestion(room, first_question);
             $startRound(room);
@@ -777,7 +777,7 @@ io.on('connection', async (socket: any) => {
         let socket_user = await getHandshakeAuth();
         console.info(`${socket_user.userName} has leaved the room`)
         socket.emit("$leaveRoom", socket_user);
-        io.to(roomId).emit("$SomeoneleaveRoom", socket_user);
+        io.to(roomId).emit("$someoneleaveRoom", socket_user);
     }
 
     function $ownerDisconnected(roomId) {
