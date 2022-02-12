@@ -43,7 +43,6 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$getRoomDetail().subscribe(x => { 
-      debugger;
       console.log('$getRoomDetail |' + JSON.stringify(x));
       this.room = x;
       this.is_start = this.room?.isStart;

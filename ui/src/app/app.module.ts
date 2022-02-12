@@ -59,6 +59,7 @@ import { BeginComponent } from './game/begin/begin.component';
 import { MessagerComponent } from './game/messager/messager.component';
 import { PlayerListComponent } from './game/player-list/player-list.component';
 import { JudgeComponent } from './game/judge/judge.component';
+import { QuestionComponent } from './game/question/question.component';
 
 
 @NgModule({
@@ -72,7 +73,8 @@ import { JudgeComponent } from './game/judge/judge.component';
     BeginComponent,
     MessagerComponent,
     PlayerListComponent,
-    JudgeComponent
+    JudgeComponent,
+    QuestionComponent
   ],
   imports: [
     BrowserModule,

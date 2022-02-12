@@ -1,0 +1,22 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.question {
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+  padding: 0 20px;
+  font: 600 20px Mulish, sans-serif;
+}
+
+.pick {
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+  margin-top: 5px;
+  font: 600 14px Mulish, sans-serif;
+  color: rgba(0, 0, 0, 0.5);
+}
