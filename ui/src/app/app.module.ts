@@ -60,6 +60,7 @@ import { MessagerComponent } from './game/messager/messager.component';
 import { PlayerListComponent } from './game/player-list/player-list.component';
 import { JudgeComponent } from './game/judge/judge.component';
 import { QuestionComponent } from './game/question/question.component';
+import { CardComponent } from './game/card/card.component';
 
 
 @NgModule({
@@ -74,7 +75,8 @@ import { QuestionComponent } from './game/question/question.component';
     MessagerComponent,
     PlayerListComponent,
     JudgeComponent,
-    QuestionComponent
+    QuestionComponent,
+    CardComponent
   ],
   imports: [
     BrowserModule,

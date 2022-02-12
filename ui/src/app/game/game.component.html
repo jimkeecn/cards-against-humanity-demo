@@ -13,7 +13,7 @@
         <question [question]="current_question"></question>
     </div>
     <div class="content">
-
+        <card [card]="card" *ngFor="let card of player_deck"></card>
     </div>
 </div>
 

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take } from 'rxjs';
-import { RoomDTO } from '../model';
+import { Card, RoomDTO } from '../model';
 import { SocketService } from '../socket.service';
 
 @Component({
@@ -19,6 +19,7 @@ export class GameComponent implements OnInit {
   room: RoomDTO;
   current_judge: string = null;
   current_question: string = null;
+  player_deck: Card[] = [];
   constructor(public route:Router, private sk:SocketService, private activeRoute : ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -85,7 +86,9 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$initCards().subscribe(x => { 
+     
       console.dir(x);
+      this.player_deck = x;
     })
   }
 
@@ -120,6 +123,7 @@ export class GameComponent implements OnInit {
     if (current_round) {
       this.current_judge = current_round.judge.userName;
       this.current_question = current_round.question.content;
+      this.sk.initCards$();
     }
   }
 }

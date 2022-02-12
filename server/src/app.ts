@@ -251,7 +251,6 @@ io.on('connection', async (socket: any) => {
         $initCards(room, user.uniqueId);
     })
 
-
     /**
      * need to impletement something to avoid server pressure on unlimited pick API call..
      */

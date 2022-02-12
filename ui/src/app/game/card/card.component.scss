@@ -1,0 +1,13 @@
+:host {
+  width: calc(50% - 6px);
+  height: 100px;
+  background-color: #fff;
+  box-sizing: border-box;
+  margin: 3px 3px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  font: 600 14px Mulish, sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
+}
