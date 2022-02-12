@@ -12,8 +12,11 @@
         <judge [userName]="current_judge"></judge>
         <question [question]="current_question"></question>
     </div>
-    <div class="content">
+    <div class="content" *ngIf="!is_owner">
         <card [card]="card" *ngFor="let card of player_deck"></card>
+    </div>
+    <div class="content" *ngIf="is_owner">
+        
     </div>
 </div>
 

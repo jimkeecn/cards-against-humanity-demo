@@ -20,6 +20,7 @@ export class GameComponent implements OnInit {
   current_judge: string = null;
   current_question: string = null;
   player_deck: Card[] = [];
+  pick_deck: Card[] = [];
   constructor(public route:Router, private sk:SocketService, private activeRoute : ActivatedRoute) { }
 
   ngOnInit(): void {

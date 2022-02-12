@@ -39,7 +39,7 @@ io.on('connection', async (socket: any) => {
 
     let disconnectedCount = 0;
 
-    //await updateSocketToUser();
+    await updateSocketToUser();
 
     async function updateSocketToUser() {
         let socket_user = await getHandshakeAuth();
@@ -254,24 +254,25 @@ io.on('connection', async (socket: any) => {
     /**
      * need to impletement something to avoid server pressure on unlimited pick API call..
      */
-    socket.on("selectACard$", (cardId: string) => { 
-        var my_room = getMyRoom(socket.id);
+    socket.on("selectACard$", async (cardId: string) => { 
+        let user = await getHandshakeAuth();
+        var my_room = getMyRoom(user.uniqueId);
         var current_round = my_room.rounds[my_room.rounds.length - 1];
 
         //Check its not the judge
-        if (current_round.judge.socketId == socket.id) {
+        if (current_round.judge.uniqueId == user.uniqueId) {
             console.error("selectACard$ | Judge cannot play this round!");
             return;
         }
 
          //Check duplicate selection
-         var deplicate_pick = current_round.picks.find(x => { 
-            if (x.socketId == socket.id) {
+         var duplicate_pick = current_round.picks.find(x => { 
+            if (x.uniqueId == user.uniqueId) {
                 return x;
             }
         })
 
-        if (deplicate_pick !== null) {
+        if (duplicate_pick !== null) {
             console.error("selectACard$ | Card has been picked");
             return;
         }
@@ -310,7 +311,7 @@ io.on('connection', async (socket: any) => {
                     current_round.picks.forEach(x => { 
                         picks.push(x.pickedCard);
                     })
-                    io.to(current_round.judge.socketId).emit('$cardsForRound', picks);
+                    io.to(my_room.uniqueId).emit('$cardsForRound', picks);
                 }, 3000)
                 
             } 
