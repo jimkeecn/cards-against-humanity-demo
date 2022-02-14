@@ -254,33 +254,34 @@ io.on('connection', async (socket: any) => {
     /**
      * need to impletement something to avoid server pressure on unlimited pick API call..
      */
-    socket.on("selectACard$", async (cardId: string) => { 
+    socket.on("selectACardByPlayer$", async (cardId: string) => { 
         let user = await getHandshakeAuth();
         var my_room = getMyRoom(user.uniqueId);
         var current_round = my_room.rounds[my_room.rounds.length - 1];
 
         //Check its not the judge
         if (current_round.judge.uniqueId == user.uniqueId) {
-            console.error("selectACard$ | Judge cannot play this round!");
+            console.error("selectACardByPlayer$ | Judge cannot play this round!");
             return;
         }
 
          //Check duplicate selection
-         var duplicate_pick = current_round.picks.find(x => { 
+         var duplicate_pick = await current_round.picks.find(x => { 
             if (x.uniqueId == user.uniqueId) {
                 return x;
             }
         })
 
-        if (duplicate_pick !== null) {
-            console.error("selectACard$ | Card has been picked");
+        if (duplicate_pick) {
+            console.dir(duplicate_pick);
+            console.error("selectACardByPlayer$ | You have picked a card already.");
             return;
         }
 
         //Set the status of this round to picking first...
         current_round.status = 'picking';
 
-        var my_cards = returnPlayerCards(socket.id, my_room);
+        var my_cards = returnPlayerCards(user.uniqueId, my_room);
         var me = getMyDetail();
         var found_card = my_cards.find(x => {
             if (x.uniqueId == cardId) {
@@ -299,14 +300,14 @@ io.on('connection', async (socket: any) => {
             })
 
             //broadcast to player a card has been picked and added to the round.
-            io.to(my_room.uniqueId).emit("$cardPicked");
-
+            //io.to(my_room.uniqueId).emit("$cardPicked");
+            socket.emit("$cardPickedByYou");
             //If the number of picks of the current round is equal to number of active player, it means the pick phase is completed.
-            if (current_round.picks.length == my_room.activePlayerList.length) {
+            if (current_round.picks.length == my_room.activePlayerList.length - 1) {
                 
                 setTimeout(() => { 
                     current_round.status = 'judging';
-                    io.to(my_room.uniqueId).emit("$judgePicking");
+                    //io.to(my_room.uniqueId).emit("$judgePicking");
                     var picks = [];
                     current_round.picks.forEach(x => { 
                         picks.push(x.pickedCard);
@@ -320,12 +321,13 @@ io.on('connection', async (socket: any) => {
         }
     })
 
-    socket.on("pickACard$", (cardId: string) => { 
-        var my_room = getMyRoom(socket.id);
+    socket.on("selectACardByJudge$", async (cardId: string) => { 
+        let user = await getHandshakeAuth();
+        var my_room = getMyRoom(user.uniqueId);
         var current_round = my_room.rounds[my_room.rounds.length - 1];
         //check player is the judge
-        if (current_round.judge.socketId !== socket.id) {
-            console.error("pickACard$ | You are not the judge!");
+        if (current_round.judge.uniqueId !== user.uniqueId) {
+            console.error("selectACardByJudge$ | You are not the judge!");
             return;
         }
         
@@ -336,7 +338,7 @@ io.on('connection', async (socket: any) => {
             return;
         }
 
-        let picked = current_round.picks.find(x => { 
+        let picked = await current_round.picks.find(x => { 
             if (x.pickedCard.uniqueId == cardId) {
                 return x;
             }
@@ -490,31 +492,7 @@ io.on('connection', async (socket: any) => {
         console.log('startGame$ | assignPlayerrCards');
     }
     
-    function pickFirstJudge(room: Room) {
-        /**
-         * Randomly pick a judge from those 5 players for the first round.
-         */
-        let number = Math.floor(Math.random() * room.activePlayerList.length);
-        let judge = room.activePlayerList[number];
-        console.log('startGame$ | pickFirstJudge ' + JSON.stringify(judge))
-        return judge;
-    }
-    
-    function pickNextJudge(room: Room) {
-        /**
-         * Pick a judge based on next judge
-         */
-        let number = room.activePlayerList.findIndex(x => {
-            x.uniqueId == room.judge.uniqueId
-        });
-        if (number < room.activePlayerList.length) {
-            return room.activePlayerList[number + 1]
-        } else {
-            return room.activePlayerList[1]
-        }
-    }
-    
-    function roundOver(room: Room) {
+    async function roundOver(room: Room) {
         //remove current round question from question list
         var current_round = room.rounds[room.rounds.length - 1];
         var question = current_round.question;
@@ -529,7 +507,7 @@ io.on('connection', async (socket: any) => {
         var question_next = getRandomQuestion(room);
 
         //get next judge
-        var judge = pickNextJudge(room);
+        var judge = await pickNextJudge(room);
         //create new round.
 
         let next_round = {
@@ -579,6 +557,37 @@ io.on('connection', async (socket: any) => {
         }, 7000)
     }
 
+    function pickFirstJudge(room: Room) {
+        /**
+         * Randomly pick a judge from those 5 players for the first round.
+         */
+        let number = Math.floor(Math.random() * room.activePlayerList.length);
+        let judge = room.activePlayerList[number];
+        console.log('startGame$ | pickFirstJudge ' + JSON.stringify(judge))
+        return judge;
+    }
+    
+    async function pickNextJudge(room: Room) {
+        /**
+         * Pick a judge based on next judge
+         */
+        console.log('pickNextJudge');
+        console.dir(room)
+        let judge = room.rounds[room.rounds.length - 1].judge;
+        let number = await room.activePlayerList.findIndex(x => {
+            if (x.uniqueId == judge.uniqueId) {
+                return x;
+            }
+        });
+        if (number < room.activePlayerList.length) {
+            return room.activePlayerList[number + 1]
+        } else {
+            return room.activePlayerList[1]
+        }
+    }
+    
+  
+
     /**
      * 
      * @param socketId 
@@ -586,9 +595,9 @@ io.on('connection', async (socket: any) => {
      * 
      * Return the list of cards for a player 
      */
-    function returnPlayerCards(socketId:string,room:Room) {
+    function returnPlayerCards(uniqueId:string,room:Room) {
         let player = room.activePlayerList.find(x => { 
-            if (x.socketId == socketId) {
+            if (x.uniqueId == uniqueId) {
                 return x
             }
         })
@@ -756,7 +765,7 @@ io.on('connection', async (socket: any) => {
         io.to(room.uniqueId).emit("$currentQuestion", first_question);
     }
 
-    function $startRound(room:Room) {
+    function $startRound(room: Room) {
         io.to(room.uniqueId).emit("$startRound",true);
     }
 

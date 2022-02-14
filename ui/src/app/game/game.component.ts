@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take } from 'rxjs';
-import { Card, RoomDTO } from '../model';
+import { Card, PickCompleteDTO, PlayerDTO, RoomDTO } from '../model';
 import { SocketService } from '../socket.service';
 
 @Component({
@@ -18,6 +18,8 @@ export class GameComponent implements OnInit {
   is_start: boolean = false;
   room: RoomDTO;
   current_judge: string = null;
+  is_judge: boolean = false;
+  is_judging: boolean = false;
   current_question: string = null;
   player_deck: Card[] = [];
   pick_deck: Card[] = [];
@@ -68,6 +70,9 @@ export class GameComponent implements OnInit {
       let message = [`裁判指定为：${x.userName}`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
       this.current_judge = x.userName;
+      if (x.uniqueId == this.sk.getUser().uniqueId) {
+        this.is_judge = true;
+      }
     })
 
 
@@ -90,6 +95,22 @@ export class GameComponent implements OnInit {
      
       console.dir(x);
       this.player_deck = x;
+    })
+
+    this.sk.$cardPickedByYou().subscribe(x => { 
+      alert('you have picked a card, please wait for other players.')
+    })
+    
+    this.sk.$cardsForRound().subscribe(x => { 
+      console.log(x);
+      this.pick_deck = x;
+      this.is_judging = true;
+    })
+
+    this.sk.$pickComplete().subscribe((x:PickCompleteDTO) => { 
+      this.is_judging = false;
+      this.pick_deck = [];
+      console.dir(x);
     })
   }
 
@@ -117,6 +138,19 @@ export class GameComponent implements OnInit {
   getJudge() {
     let current_round = this.room.rounds[this.room.rounds.length - 1];
     this.current_judge = current_round.judge.userName;
+  }
+
+  selectACardByPlayer($event) {
+    this.sk.selectACardByPlayer$($event);
+  }
+
+  selectACardByJudge($event) {
+    if (this.is_judge) {
+      this.sk.selectACardByJudge$($event);
+    } else {
+      alert('你不是裁判.');
+    }
+    
   }
 
   private setRoomDetail() {

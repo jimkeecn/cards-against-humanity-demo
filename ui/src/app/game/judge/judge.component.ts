@@ -8,6 +8,7 @@ import { Component, Input, OnInit } from '@angular/core';
 export class JudgeComponent implements OnInit {
 
   @Input() userName: string;
+  @Input() isJudging: boolean;
   constructor() { }
 
   ngOnInit(): void {

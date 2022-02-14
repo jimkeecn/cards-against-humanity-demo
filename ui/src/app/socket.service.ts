@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';  
-import { map, Observable } from 'rxjs';
+import { map, observable, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Card, Player, PlayerDTO, Question, RoomDTO, RoomInput } from './model';
 import { io } from "socket.io-client";
@@ -89,12 +89,12 @@ export class SocketService {
     this.socket.emit('startGame$',roomId);
   }
 
-  selectACard$(cardId:string): void{
-    this.socket.emit('selectACard$',cardId)
+  selectACardByPlayer$(cardId:string): void{
+    this.socket.emit('selectACardByPlayer$',cardId)
   }
 
-  pickACard$(cardId: string): void{
-    this.socket.emit('pickACard$',cardId)
+  selectACardByJudge$(cardId: string): void{
+    this.socket.emit('selectACardByJudge$',cardId)
   }
 
   initCards$(): void{
@@ -192,10 +192,38 @@ export class SocketService {
     })
   }
 
+  $cardPickedByYou(): Observable<any>{
+    return new Observable<any>(observable => { 
+      this.socket.on('$cardPickedByYou', (data) => { 
+        observable.next(data);
+      })
+    })
+  }
+
+  $cardsForRound(): Observable<any>{
+    return new Observable<any>(observable => { 
+      this.socket.on('$cardsForRound', (data) => { 
+        observable.next(data);
+      })
+    })
+  }
+
+  
+  $pickComplete(): Observable<any>{
+    return new Observable<any>(observable => { 
+      this.socket.on('$pickComplete', (data) => { 
+        observable.next(data);
+      })
+    })
+  }
+
   $errors(): Observable<any>{
     return new Observable<any>(observer => {
       this.socket.on('$errors', (data: any) => observer.next(data));
     })
   }
 
+  getUser() : Player{
+    return JSON.parse(this.user_string);
+  }
 }
