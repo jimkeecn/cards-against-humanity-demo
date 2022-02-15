@@ -1,8 +1,10 @@
 
 <div class="message-dialog" [ngClass]="{active:isActive}">
     <mat-icon class="messager" [ngClass]="{active:isActive, shake:isShaking}" (click)="isActive = !isActive">{{isActive ? 'arrow_drop_down' : 'arrow_drop_up'}}</mat-icon>
-    <div class="message" *ngFor="let msg of _messages">
-        <span>{{msg[0]}}</span>
-        <span>{{msg[1]}}</span>
+    <div class="messager-content">
+        <div class="message" *ngFor="let msg of _messages">
+            <span>{{msg[0]}}</span>
+            <span>{{msg[1]}}</span>
+        </div>
     </div>
 </div>

@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, take } from 'rxjs';
 import { Card, PickCompleteDTO, PlayerDTO, RoomDTO } from '../model';
 import { SocketService } from '../socket.service';
+import { JudgePickComponent } from './dialog/judge-pick/judge-pick.component';
+import { PlayerPickComponent } from './dialog/player-pick/player-pick.component';
+import { WinnerComponent } from './dialog/winner/winner.component';
 
 @Component({
   selector: 'app-game',
@@ -23,7 +27,8 @@ export class GameComponent implements OnInit {
   current_question: string = null;
   player_deck: Card[] = [];
   pick_deck: Card[] = [];
-  constructor(public route:Router, private sk:SocketService, private activeRoute : ActivatedRoute) { }
+  roundNumber : number = 0;
+  constructor(public route:Router, private sk:SocketService, private activeRoute : ActivatedRoute,public dialog: MatDialog) { }
 
   ngOnInit(): void {
     
@@ -82,9 +87,10 @@ export class GameComponent implements OnInit {
       this.current_question = x.content;
     })
 
-    this.sk.$startRound().pipe(take(1)).subscribe(x => { 
+    this.sk.$startRound().subscribe(x => { 
       if (x) {
-        let message = [`比赛开始了`,`${this.getImmediateDate()}`];
+        this.roundNumber = this.roundNumber + 1;
+        let message = [`第${this.roundNumber}局开始了..玩家获取新卡片`,`${this.getImmediateDate()}`];
         this.sys_messages.push(message);
         this.sk.initCards$();
         this.is_start = true;
@@ -98,7 +104,14 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$cardPickedByYou().subscribe(x => { 
-      alert('you have picked a card, please wait for other players.')
+      const dialog = this.dialog.open(PlayerPickComponent, {
+        data: x,
+      });
+
+      dialog.afterClosed().subscribe(msg=> { 
+        let message = [msg,`${this.getImmediateDate()}`];
+        this.sys_messages.push(message);
+      })
     })
     
     this.sk.$cardsForRound().subscribe(x => { 
@@ -109,8 +122,26 @@ export class GameComponent implements OnInit {
 
     this.sk.$pickComplete().subscribe((x:PickCompleteDTO) => { 
       this.is_judging = false;
+      this.is_judge = false;
       this.pick_deck = [];
       console.dir(x);
+      const dialog = this.dialog.open(JudgePickComponent, {
+        data: x,
+      });
+
+      dialog.afterClosed().subscribe(msg=> { 
+        let message = [msg,`${this.getImmediateDate()}`];
+        this.sys_messages.push(message);
+      })
+    })
+
+    this.sk.$gameOver().pipe(take(1)).subscribe(x => { 
+      const dialog = this.dialog.open(WinnerComponent, {
+        data: x,
+      });
+
+      dialog.afterClosed().subscribe(msg=> { 
+      })
     })
   }
 

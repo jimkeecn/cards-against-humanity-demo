@@ -61,6 +61,9 @@ import { PlayerListComponent } from './game/player-list/player-list.component';
 import { JudgeComponent } from './game/judge/judge.component';
 import { QuestionComponent } from './game/question/question.component';
 import { CardComponent } from './game/card/card.component';
+import { JudgePickComponent } from './game/dialog/judge-pick/judge-pick.component';
+import { PlayerPickComponent } from './game/dialog/player-pick/player-pick.component';
+import { WinnerComponent } from './game/dialog/winner/winner.component';
 
 
 @NgModule({
@@ -76,7 +79,10 @@ import { CardComponent } from './game/card/card.component';
     PlayerListComponent,
     JudgeComponent,
     QuestionComponent,
-    CardComponent
+    CardComponent,
+    JudgePickComponent,
+    PlayerPickComponent,
+    WinnerComponent
   ],
   imports: [
     BrowserModule,

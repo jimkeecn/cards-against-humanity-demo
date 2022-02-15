@@ -20,7 +20,10 @@
   bottom: 0px;
   transition: bottom 0.2s ease;
 }
-
+.messager-content {
+  height: 170px;
+  overflow-y: auto;
+}
 .messager {
   position: absolute;
   top: 0px;

@@ -16,7 +16,7 @@
         <card [card]="card" *ngFor="let card of player_deck" (click)="selectACardByPlayer(card.uniqueId)"></card>
     </div>
     <div class="content">
-        <h5 *ngIf="!is_judging">正在等待玩家选择</h5>
+        <h5 *ngIf="!is_judging && is_judge ">正在等待玩家选择</h5>
         <card [card]="card" *ngFor="let card of pick_deck" (click)="selectACardByJudge(card.uniqueId)"></card>
     </div>
 </div>

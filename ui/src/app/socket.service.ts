@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';  
 import { map, observable, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { Card, Player, PlayerDTO, Question, RoomDTO, RoomInput } from './model';
+import { Card, GamePlayer, Player, PlayerDTO, Question, RoomDTO, RoomInput } from './model';
 import { io } from "socket.io-client";
 
 @Injectable({
@@ -192,8 +192,8 @@ export class SocketService {
     })
   }
 
-  $cardPickedByYou(): Observable<any>{
-    return new Observable<any>(observable => { 
+  $cardPickedByYou(): Observable<Card>{
+    return new Observable<Card>(observable => { 
       this.socket.on('$cardPickedByYou', (data) => { 
         observable.next(data);
       })
@@ -212,6 +212,15 @@ export class SocketService {
   $pickComplete(): Observable<any>{
     return new Observable<any>(observable => { 
       this.socket.on('$pickComplete', (data) => { 
+        observable.next(data);
+      })
+    })
+  }
+
+  //$gameOver
+  $gameOver(): Observable<GamePlayer>{
+    return new Observable<GamePlayer>(observable => { 
+      this.socket.on('$gameOver', (data) => { 
         observable.next(data);
       })
     })
