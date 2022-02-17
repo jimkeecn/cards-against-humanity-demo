@@ -32,7 +32,7 @@ export class JudgePickComponent implements OnInit {
 
   ngOnInit(): void {
     setTimeout(() => { 
-      this.dialogRef.close(`裁判选择${this.pick.answer.content},恭喜${this.userName}累计分数+1`);
+      this.dialogRef.close([this.pick.answer.content,this.userName]);
     },4000)
   }
 

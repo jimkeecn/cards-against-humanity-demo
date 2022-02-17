@@ -78,6 +78,7 @@ export class Card{
     uniqueId: string;
     content: string;
     description: string;
+    isPicked: boolean;
 }
 
 export class Question{

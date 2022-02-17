@@ -85,7 +85,7 @@ export class GameComponent implements OnInit {
 
 
     this.sk.$currentQuestion().subscribe(x => { 
-      let message = [`当前问题： ${x.content}`, `${this.getImmediateDate()}`];
+      let message = [`当前问题： ${x.content.replace('${}','______')}`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
       this.current_question = x.content;
     })
@@ -107,6 +107,12 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$cardPickedByYou().subscribe(x => { 
+      this.player_deck.forEach(c => { 
+        if (c.uniqueId == x.uniqueId) {
+          c.isPicked = true;
+        }
+      })
+
       const dialog = this.dialog.open(PlayerPickComponent, {
         data: x,
       });
@@ -133,7 +139,7 @@ export class GameComponent implements OnInit {
       });
 
       dialog.afterClosed().subscribe(msg=> { 
-        let message = [msg,`${this.getImmediateDate()}`];
+        let message = [`最终答案为：${this.current_question.replace('${}',msg[0])}<br>恭喜${msg[1]}获得一分`,`${this.getImmediateDate()}`];
         this.sys_messages.push(message);
       })
     })
@@ -144,7 +150,7 @@ export class GameComponent implements OnInit {
       });
 
       dialog.afterClosed().subscribe(msg => { 
-        let message = [`游戏结束，恭喜${x.userName}成为冠军!`,`${this.getImmediateDate()}`];
+        let message = [`游戏结束，恭喜${x.userName}成为本场最反人类的玩家!`,`${this.getImmediateDate()}`];
         this.sys_messages.push(message);
       })
     })

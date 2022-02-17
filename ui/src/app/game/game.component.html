@@ -13,7 +13,10 @@
         <question [question]="current_question"></question>
     </div>
     <div class="content" *ngIf="!is_judge && !is_judging">
-        <card [card]="card" *ngFor="let card of player_deck" (click)="selectACardByPlayer(card.uniqueId)"></card>
+        <card [card]="card" 
+        [ngClass]="{'picked':card.isPicked}"
+        *ngFor="let card of player_deck" 
+        (click)="selectACardByPlayer(card.uniqueId)"></card>
     </div>
     <div class="content">
         <h5 *ngIf="!is_judging && is_judge ">正在等待玩家选择</h5>

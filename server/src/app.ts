@@ -39,10 +39,11 @@ io.on('connection', async (socket: any) => {
 
     let disconnectedCount = 0;
 
-    await updateSocketToUser();
+    await updateSocketToUserAndRoom();
 
-    async function updateSocketToUser() {
+    async function updateSocketToUserAndRoom() {
         let socket_user = await getHandshakeAuth();
+        let room = getMyRoom(socket_user.uniqueId);
         //console.log("New player connected : \n" + JSON.stringify(socket_user) + "\n" +socket.id + "\n");
         let user = active_player_list.find(x => { 
             if (x.uniqueId == socket_user.uniqueId) {
@@ -51,6 +52,10 @@ io.on('connection', async (socket: any) => {
         })
         if (user) {
             user.socketId = socket.id;
+        }
+
+        if (room) {
+            socket.join(room.uniqueId);
         }
     }
 
@@ -66,7 +71,7 @@ io.on('connection', async (socket: any) => {
         if (room && room.isStart == false) {
             console.info('disconnect room |' + room);
             await leaveRoom(room.uniqueId);
-        }
+        } 
     })
     
     socket.on("checkMyExist$", async () => { 
@@ -313,7 +318,7 @@ io.on('connection', async (socket: any) => {
             //broadcast to player a card has been picked and added to the round.
             //io.to(my_room.uniqueId).emit("$cardPicked");
             socket.emit("$cardPickedByYou",found_card);
-            //If the number of picks of the current round is equal to number of active player, it means the pick phase is completed.
+            //If the number of picks of the current round is equal to number of active player, it means the pick phase is completed. -1 is for excluding judge.
             if (current_round.picks.length == my_room.activePlayerList.length - 1) {
                 
                 setTimeout(() => { 
@@ -381,11 +386,20 @@ io.on('connection', async (socket: any) => {
             return;
         }
         if (my_room.isStart == true) {
+            let current_round = my_room.rounds[my_room.rounds.length - 1];
             $initCards(my_room, user.uniqueId);
-            let judge = my_room.rounds[my_room.rounds.length - 1].judge;
+            let judge = current_round.judge;
             $pickJudgeBySocket(my_room, judge);
-            let question = my_room.rounds[my_room.rounds.length - 1].question;
+            let question = current_round.question;
             $currentQuestionBySocket(my_room, question);
+            //If the number of picks of the current round is equal to number of active player, it means the pick phase is completed. -1 is for excluding judge.
+            if (current_round.picks.length >= my_room.activePlayerList.length - 1) {
+                var picks = [];
+                current_round.picks.forEach(x => { 
+                    picks.push(x.pickedCard);
+                })
+                socket.emit('$cardsForRound', picks);
+            }
         }
     })
 

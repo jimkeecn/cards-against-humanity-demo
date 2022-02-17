@@ -5,6 +5,7 @@ import { map, observable, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Card, GamePlayer, Player, PlayerDTO, Question, RoomDTO, RoomInput } from './model';
 import { io } from "socket.io-client";
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class SocketService {
   user_string = localStorage.getItem('user');
   socket = io(environment.url, { forceNew: true, query: { user : this.user_string}})
 
-  constructor( private route: Router) { 
+  constructor( private route: Router,private _snackBar: MatSnackBar) { 
     this.socket.on('disconnect', () => { 
       // let confirm = window.confirm("you have been disconnected from the server, Please refresh");
       // if (confirm) {
@@ -24,6 +25,13 @@ export class SocketService {
 
       this.connect();
     })
+
+    this.socket.on('$errors', (data: string) => { 
+      this._snackBar.open(data, null, {
+        duration: 1000,
+        panelClass:['error-snackbar']
+      })
+    });
 
     this.socket.on('$200', () => { 
       let href = this.route.url;
@@ -230,11 +238,6 @@ export class SocketService {
     })
   }
 
-  $errors(): Observable<string>{
-    return new Observable<any>(observer => {
-      this.socket.on('$errors', (data: string) => observer.next(data));
-    })
-  }
 
   getUser() : Player{
     return JSON.parse(this.user_string);
