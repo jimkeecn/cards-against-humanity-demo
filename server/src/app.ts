@@ -93,6 +93,7 @@ io.on('connection', async (socket: any) => {
 
         if (myRoom != null) {
             console.error("createNewRoom$ 2| This player has a room already");
+            $errors("This player has a room already");
             return;
         }
 
@@ -116,6 +117,7 @@ io.on('connection', async (socket: any) => {
                 console.info(`createNewRoom$ 5| ${JSON.stringify(owner)}`);
                 if (owner == null) {
                     console.error("createNewRoom$ 6| Cannot find owner from active player list");
+                    $errors("Cannot find owner from active player list");
                     return;
                 }
 
@@ -199,11 +201,13 @@ io.on('connection', async (socket: any) => {
         var room = getRoomById(user.uniqueId,roomId);
         if (room == null) {
             console.error("startGame$ | Cannot find your room.");
+            $errors("Cannot find your room.");
             return;
         }
 
         if (room.owner.uniqueId !== user.uniqueId) {
             console.error("startGame$ | You are not the owner of this room.");
+            $errors("You are not the owner of this room.");
             return;
         }
         //Set the game as start and broadcast to everyone in the game
@@ -262,6 +266,7 @@ io.on('connection', async (socket: any) => {
         //Check its not the judge
         if (current_round.judge.uniqueId == user.uniqueId) {
             console.error("selectACardByPlayer$ | Judge cannot play this round!");
+            $errors("Judge cannot play this round!");
             return;
         }
 
@@ -275,6 +280,7 @@ io.on('connection', async (socket: any) => {
         if (duplicate_pick) {
             console.dir(duplicate_pick);
             console.error("selectACardByPlayer$ | You have picked a card already.");
+            $errors("You have picked a card already");
             return;
         }
 
@@ -333,6 +339,7 @@ io.on('connection', async (socket: any) => {
         //check player is the judge
         if (current_round.judge.uniqueId !== user.uniqueId) {
             console.error("selectACardByJudge$ | You are not the judge!");
+            $errors("You are not the judge!");
             return;
         }
         
@@ -340,6 +347,7 @@ io.on('connection', async (socket: any) => {
         //check round status
         if (current_round.status !== 'judging') {
             console.error(roundStatusChecking(current_round.status));
+            $errors(roundStatusChecking(current_round.status));
             return;
         }
 
@@ -364,6 +372,22 @@ io.on('connection', async (socket: any) => {
         }
     })
 
+    socket.on('getGameProgress$', async (roomId) => { 
+        let user = await getHandshakeAuth();
+        var my_room = getMyRoom(user.uniqueId);
+        if (my_room.uniqueId !== roomId) {
+            console.error("this is not your room.");
+            $errors("this is not your room.");
+            return;
+        }
+        if (my_room.isStart == true) {
+            $initCards(my_room, user.uniqueId);
+            let judge = my_room.rounds[my_room.rounds.length - 1].judge;
+            $pickJudgeBySocket(my_room, judge);
+            let question = my_room.rounds[my_room.rounds.length - 1].question;
+            $currentQuestionBySocket(my_room, question);
+        }
+    })
 
     function createNewRoom(owner: Player,param:RoomInput) {
         var game_owner:GamePlayer = {
@@ -456,16 +480,19 @@ io.on('connection', async (socket: any) => {
     
         if (room.isStart === true) {
             console.error("startGame$ | game has been started...");
+            $errors("game has been started...");
             return false;
         }
     
         if (room == null) {
             console.error("startGame$ | cannot find this room to start the game");
+            $errors("cannot find this room to start the game");
             return false;
         }
 
         if (room.activePlayerList.length < 3) {
             console.error("startGame$ | not enough player");
+            $errors("not enough player");
             return false;
         }
     
@@ -612,6 +639,7 @@ io.on('connection', async (socket: any) => {
     
         if (player == null) {
             console.error("returnPlayerCards | Cannot find the player");
+            $errors("Cannot find the player");
             return;
         }
         return player.currentDeck;
@@ -634,6 +662,7 @@ io.on('connection', async (socket: any) => {
     
         if (room == null) {
             console.error("joinRoom | Cannot find a game to join");
+            $errors("Cannot find a game to join");
             return null;
         }
     
@@ -651,6 +680,7 @@ io.on('connection', async (socket: any) => {
     
         if (me == null) {
             console.error("joinRoom | Cannot find the player");
+            $errors("Cannot find the player");
             return null;
         }
     
@@ -667,6 +697,7 @@ io.on('connection', async (socket: any) => {
     
         if (isInRoom != null) {
             console.error("joinRoom | This player is already in the room");
+            $errors("This player is already in the room");
         }
     
         /**
@@ -674,7 +705,8 @@ io.on('connection', async (socket: any) => {
          */
 
          if (room.activePlayerList.length >= room.totalPlayer) {
-            console.error("joinRoom | The room is full");
+             console.error("joinRoom | The room is full");
+             $errors("The room is full");
             return null;
         }
 
@@ -684,6 +716,7 @@ io.on('connection', async (socket: any) => {
 
         if (room.isStart == true) {
             console.error("joinRoom | The room is started");
+            $errors("The room is started");
             return null;
         }
 
@@ -731,6 +764,7 @@ io.on('connection', async (socket: any) => {
             return room;
         } else {
             console.error('cannot find this room for this user.');
+            $errors("cannot find this room for this user.");
             return;
         }
     }
@@ -759,6 +793,14 @@ io.on('connection', async (socket: any) => {
         io.to(room.uniqueId).emit("$pickJudge", judgeDTO);
     }
 
+    function $pickJudgeBySocket(room: Room, judge: Player) {
+        let judgeDTO: PlayerDTO = {
+            uniqueId: judge.uniqueId,
+            userName: judge.userName
+        }
+        socket.emit("$pickJudge", judgeDTO);
+    }
+
     function $initCards(room: Room, uniqueId:string) {
         room.activePlayerList.forEach(x => { 
             if (x.uniqueId == uniqueId) {
@@ -773,6 +815,11 @@ io.on('connection', async (socket: any) => {
         io.to(room.uniqueId).emit("$currentQuestion", first_question);
     }
 
+    function $currentQuestionBySocket(room: Room, first_question: Question) {
+        console.log('$currentQuestionBySocket | ' +  JSON.stringify(first_question))
+        socket.emit("$currentQuestion", first_question);
+    }
+
     function $startRound(room: Room) {
         io.to(room.uniqueId).emit("$startRound",true);
     }
@@ -782,14 +829,6 @@ io.on('connection', async (socket: any) => {
         $getRoomId(roomId)
     }
     
-
-    function $errors(error: string, socketId: string) {
-        if (socket.id == socketId) {
-            socket.emit('$errors', error);
-        }
-        
-    }
-
     async function $leaveRoom(roomId) {
         let socket_user = await getHandshakeAuth();
         console.info(`${socket_user.userName} has leaved the room`)
@@ -839,6 +878,10 @@ io.on('connection', async (socket: any) => {
 
     function $goToRoomList() {
         socket.emit("$goToRoomList");
+    }
+
+    function $errors(error: string) {
+        socket.emit('$errors', error);
     }
 })
 

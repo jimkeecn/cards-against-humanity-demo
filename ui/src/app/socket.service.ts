@@ -101,6 +101,10 @@ export class SocketService {
     this.socket.emit('initCards$');
   }
 
+  getGameProgress$(roomId:string): void{
+    this.socket.emit('getGameProgress$',roomId);
+  }
+
 
 
   /**on */
@@ -226,9 +230,9 @@ export class SocketService {
     })
   }
 
-  $errors(): Observable<any>{
+  $errors(): Observable<string>{
     return new Observable<any>(observer => {
-      this.socket.on('$errors', (data: any) => observer.next(data));
+      this.socket.on('$errors', (data: string) => observer.next(data));
     })
   }
 

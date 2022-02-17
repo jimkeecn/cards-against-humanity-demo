@@ -56,11 +56,14 @@ export class GameComponent implements OnInit {
       this.room = x;
       this.is_start = this.room?.isStart;
       let current_user = this.sk.getLocalUser();
-      this.setRoomDetail();
       if (current_user.uniqueId == this.room.owner.uniqueId) {
         this.is_owner = true;
       } else {
         this.is_owner = false;
+      }
+
+      if (this.is_start) {
+        this.sk.getGameProgress$(this.room.uniqueId);
       }
     })
 
@@ -140,7 +143,9 @@ export class GameComponent implements OnInit {
         data: x,
       });
 
-      dialog.afterClosed().subscribe(msg=> { 
+      dialog.afterClosed().subscribe(msg => { 
+        let message = [`游戏结束，恭喜${x.userName}成为冠军!`,`${this.getImmediateDate()}`];
+        this.sys_messages.push(message);
       })
     })
   }
@@ -184,12 +189,5 @@ export class GameComponent implements OnInit {
     
   }
 
-  private setRoomDetail() {
-    let current_round = this.room?.rounds[this.room.rounds.length - 1];
-    if (current_round) {
-      this.current_judge = current_round.judge.userName;
-      this.current_question = current_round.question.content;
-      this.sk.initCards$();
-    }
-  }
+ 
 }
