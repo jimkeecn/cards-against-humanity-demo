@@ -8,7 +8,7 @@ import questions_data from "./questions.json";
 const cors = require('cors');
 import { createServer } from "http";
 const { v4: uuidv4 } = require('uuid');
-
+console.log(" process.env.PORT",  process.env.PORT)
 const PORT = process.env.PORT || 8000;
 
 
@@ -905,6 +905,10 @@ io.on('connection', async (socket: any) => {
 httpServer.listen(PORT, ():void => {
     console.log(`Server Running here 👉 http://localhost:${PORT}`);
 });
+
+app.get('/test', (req, res) => { 
+    res.send('You have successfully connect to the API');
+})
 
 app.post('/newuser', (req, res) => { 
     console.log('start new user');
