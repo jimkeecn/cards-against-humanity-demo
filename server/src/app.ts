@@ -900,7 +900,7 @@ io.on('connection', async (socket: any) => {
 })
 
 
-
+io.listen(httpServer);
 
 httpServer.listen(PORT, ():void => {
     console.log(`Server Running here 👉 http://localhost:${PORT}`);
