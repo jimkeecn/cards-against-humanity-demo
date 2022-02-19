@@ -43,19 +43,22 @@ io.on('connection', async (socket: any) => {
 
     async function updateSocketToUserAndRoom() {
         let socket_user = await getHandshakeAuth();
-        let room = getMyRoom(socket_user.uniqueId);
-        //console.log("New player connected : \n" + JSON.stringify(socket_user) + "\n" +socket.id + "\n");
-        let user = active_player_list.find(x => { 
-            if (x.uniqueId == socket_user.uniqueId) {
-                return x
+        if (socket_user) {
+            let room = getMyRoom(socket_user?.uniqueId);
+        
+            //console.log("New player connected : \n" + JSON.stringify(socket_user) + "\n" +socket.id + "\n");
+            let user = active_player_list.find(x => { 
+                if (x.uniqueId == socket_user?.uniqueId) {
+                    return x
+                }
+            })
+            if (user) {
+                user.socketId = socket.id;
             }
-        })
-        if (user) {
-            user.socketId = socket.id;
-        }
-
-        if (room) {
-            socket.join(room.uniqueId);
+    
+            if (room) {
+                socket.join(room.uniqueId);
+            }
         }
     }
 

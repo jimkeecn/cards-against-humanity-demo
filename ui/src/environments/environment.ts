@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   socketPort: 8000,
-  url:`https://13.211.246.38:44359`
+  url:`http://13.211.246.38:5123`
 };
 
 /*
