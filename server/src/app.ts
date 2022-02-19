@@ -25,7 +25,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:4200"
+    origin: ["http://localhost:4200","http://test.litteam.gg","https://test.litteam.gg"]
   }
 });
 
