@@ -3,7 +3,7 @@
     <player-list 
     [max]="room?.totalPlayer" 
     [number]="room?.activePlayerList.length"
-    [players]="room?.activePlayerList"
+    [uniqueId]="room_id"
     ></player-list>
 </div>
 
@@ -24,7 +24,7 @@
     </div>
 </div>
 
-<begin *ngIf="is_owner && !is_start" 
+<begin *ngIf="!is_start" 
 [isOwner]="is_owner" [roomId]="room_id" 
 [max]="room.totalPlayer" [number]="room.activePlayerList.length"></begin>
 <messager [messages]="sys_messages"></messager>

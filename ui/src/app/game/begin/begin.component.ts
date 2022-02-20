@@ -21,7 +21,7 @@ export class BeginComponent implements OnInit {
     if (this.isOwner) {
       this.sk.startGame$(this.roomId)
     } else {
-      alert('you do not have permission to do that.');
+      alert('你没有权限。');
     }
   }
 }

@@ -138,8 +138,14 @@ export class GameComponent implements OnInit {
         data: x,
       });
 
-      dialog.afterClosed().subscribe(msg=> { 
-        let message = [`最终答案为：${this.current_question.replace('${}',msg[0])}<br>恭喜${msg[1]}获得一分`,`${this.getImmediateDate()}`];
+      dialog.afterClosed().subscribe(msg => { 
+        let message = [];
+        if (this.current_question.includes('${}')) {
+           message = [`最终答案为：${this.current_question.replace('${}',msg[0])}<br>恭喜${msg[1]}获得一分`,`${this.getImmediateDate()}`];
+        } else {
+           message = [`最终答案为：${this.current_question},${msg[0]}<br>恭喜${msg[1]}获得一分`,`${this.getImmediateDate()}`];
+        }
+        
         this.sys_messages.push(message);
       })
     })
@@ -165,7 +171,7 @@ export class GameComponent implements OnInit {
     if (this.is_owner) {
       this.sk.startGame$(this.room_id)
     } else {
-      alert('you do not have permission to do that.');
+      alert('你不是房间拥有者。');
     }
     
   }

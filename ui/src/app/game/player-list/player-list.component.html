@@ -1,4 +1,4 @@
-<button type="button" class="player-list-button"  (click)="isActive = !isActive">玩家列表</button>
+<button type="button" class="player-list-button"  (click)="getPlayerList()">玩家列表</button>
 <div class="player-list-container" [ngClass]="{active:isActive}">
     <div class="player-list-header">
         <mat-icon  (click)="isActive = !isActive">arrow_drop_up</mat-icon>

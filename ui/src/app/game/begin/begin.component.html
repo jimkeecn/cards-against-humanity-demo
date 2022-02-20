@@ -1,4 +1,4 @@
 <h1>当前玩家总数 {{number}}/{{max}}</h1>
 <h5>正在等待其他玩家加入...</h5>
-<button type="button" class="begin-game-button"  (click)="start()">开始游戏</button>
+<button type="button" class="begin-game-button" *ngIf="isOwner" (click)="start()">开始游戏</button>
 <span class="check-rule">查看游戏规则</span>

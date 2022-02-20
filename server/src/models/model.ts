@@ -25,7 +25,7 @@ export class RoomDTO {
     uniqueId: string;
     totalPlayer: number;
     activePlayer: number;
-    activePlayerList: GamePlayer[];
+    activePlayerList: GamePlayerDTO[];
     name: string;
     owner: Player;
     isStart: boolean;
@@ -46,6 +46,13 @@ export class GamePlayer{
     userName: string;
     score: number;
     currentDeck: Card[]; //Cards Deck, no more than 10
+}
+
+export class GamePlayerDTO{
+    socketId: string;
+    uniqueId: string;
+    userName: string;
+    score: number;
 }
 
 export class PlayerDTO {
@@ -75,15 +82,15 @@ export class PlayerPickDTO{
 }
 
 export class Card{
-    uniqueId: string;
-    content: string;
-    description: string;
+    uniqueId?: string;
+    content?: string;
+    description?: string;
 }
 
 export class Question{
-    uniqueId: string;
-    content: string;
-    description: string;
+    uniqueId?: string;
+    content?: string;
+    description?: string;
 }
 
 export class PickCompleteDTO{
