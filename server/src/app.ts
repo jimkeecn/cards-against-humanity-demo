@@ -71,6 +71,9 @@ io.on('connection', async (socket: any) => {
     
         socket.on("disconnect", async (reason) => { 
             let socket_user = await getHandshakeAuth();
+            if (socket_user == null) {
+                return;
+            }
             console.info(`disconnect | ${socket_user ? socket_user.userName : socket_user} is disconnected`);
             let room = getMyRoom(socket_user.uniqueId);
            
@@ -153,6 +156,10 @@ io.on('connection', async (socket: any) => {
         socket.on("joinRoom$", async (roomId: string) => { 
     
             let socket_user = await getHandshakeAuth();
+            if (socket_user == null) {
+                socket.emit('$404');
+                return;
+            }
             let player = await joinRoom(roomId);
             if (player == null) {
                 return;
@@ -171,6 +178,7 @@ io.on('connection', async (socket: any) => {
             let socket_user = await getHandshakeAuth();
             if (socket_user == null) {
                 socket.emit('$404');
+                return;
             }
             room_list.forEach((x, index) => { 
                 /**
@@ -208,6 +216,10 @@ io.on('connection', async (socket: any) => {
     
         socket.on("startGame$", async (roomId:string) => { 
             let user = await getHandshakeAuth();
+            if (user == null) {
+                socket.emit('$404');
+                return;
+            }
             console.log('startGame$ |' + JSON.stringify(user))
             var room = getRoomById(user.uniqueId,roomId);
             if (room == null) {
@@ -261,6 +273,10 @@ io.on('connection', async (socket: any) => {
          */
         socket.on('initCards$', async () => { 
             let user = await getHandshakeAuth();
+            if (user == null) {
+                socket.emit('$404');
+                return;
+            }
             console.log('initCards$ |' + JSON.stringify(user))
             var room = getMyRoom(user.uniqueId);
             $initCards(room, user.uniqueId);
@@ -271,6 +287,10 @@ io.on('connection', async (socket: any) => {
          */
         socket.on("selectACardByPlayer$", async (cardId: string) => { 
             let user = await getHandshakeAuth();
+            if (user == null) {
+                socket.emit('$404');
+                return;
+            }
             var my_room = getMyRoom(user.uniqueId);
             var current_round = my_room.rounds[my_room.rounds.length - 1];
     
@@ -345,6 +365,10 @@ io.on('connection', async (socket: any) => {
     
         socket.on("selectACardByJudge$", async (cardId: string) => { 
             let user = await getHandshakeAuth();
+            if (user == null) {
+                socket.emit('$404');
+                return;
+            }
             var my_room = getMyRoom(user.uniqueId);
             var current_round = my_room.rounds[my_room.rounds.length - 1];
             //check player is the judge
@@ -385,6 +409,10 @@ io.on('connection', async (socket: any) => {
     
         socket.on('getGameProgress$', async (roomId) => { 
             let user = await getHandshakeAuth();
+            if (user == null) {
+                socket.emit('$404');
+                return;
+            }
             var my_room = getMyRoom(user.uniqueId);
             if (my_room.uniqueId !== roomId) {
                 console.error("this is not your room.");
@@ -926,77 +954,102 @@ app.get('/test', (req, res) => {
 })
 
 app.post('/newuser', (req, res) => { 
-    console.log('start new user');
-    console.dir( req.body)
-    let username = req.body.userName
-    let player = InitiatePlayer(username);
-    active_player_list.push(player);
-    console.log(active_player_list);
-    res.send(player);
+    try {
+        console.log('start new user');
+        console.dir( req.body)
+        let username = req.body.userName
+        let player = InitiatePlayer(username);
+        active_player_list.push(player);
+        console.log(active_player_list);
+        res.send(player);
+    } catch (ex) {
+        throw ex;
+    }
+   
 })
 
 app.post('/removeuser', (req, res) => { 
-    console.log('remove  user');
-    console.dir( req.body)
-    let uniqueId = req.body.uniqueId
-    let playerIndex = active_player_list.findIndex(x => { 
-        if (x.uniqueId == uniqueId) {
-            return x;
+    try {
+        console.log('remove  user');
+        console.dir( req.body)
+        let uniqueId = req.body.uniqueId
+        let playerIndex = active_player_list.findIndex(x => { 
+            if (x.uniqueId == uniqueId) {
+                return x;
+            }
+        })
+    
+        if (playerIndex != null) {
+            active_player_list.splice(playerIndex, 1);
         }
-    })
-
-    if (playerIndex != null) {
-        active_player_list.splice(playerIndex, 1);
+        console.log(active_player_list);
+        res.send(true);
+    } catch (ex) {
+        throw ex;
     }
-    console.log(active_player_list);
-    res.send(true);
+   
 })
 
 app.get('/getPlayerList/:id', (req, res) => { 
-    let room = room_list.find(x => {
-        if (x.uniqueId == req.params.id) {
-            return x;
-        }
-    });
-    if (room) {
-        room.activePlayerList.forEach(x => {
-            x.currentDeck = [];
+    try {
+        let room = room_list.find(x => {
+            if (x.uniqueId == req.params.id) {
+                return x;
+            }
         });
-        res.send(room.activePlayerList);
-    } else {
-        res.send([]);
+        if (room) {
+            room.activePlayerList.forEach(x => {
+                x.currentDeck = [];
+            });
+            res.send(room.activePlayerList);
+        } else {
+            res.send([]);
+        }
+    } catch (ex) {
+        throw ex;
     }
+   
     
 })
 
 app.get('/getRoundDetail/:id', (req, res) => { 
-    let room = room_list.find(x => {
-        if (x.uniqueId == req.params.id) {
-            return x;
+    try {
+        let room = room_list.find(x => {
+            if (x.uniqueId == req.params.id) {
+                return x;
+            }
+        });
+        if (room) {
+            res.send(room.rounds);
+        } else {
+            res.send([]);
         }
-    });
-    if (room) {
-        res.send(room.rounds);
-    } else {
-        res.send([]);
+    } catch (ex) {
+        throw ex;
     }
+  
     
 })
 
 app.post('/checkuser', (req, res) => { 
-    console.log('start check user');
-    console.dir(req.body)
-    let player = active_player_list.find(x => { 
-        if (x.uniqueId == req.body.uniqueId) {
-            return x
+    try {
+        console.log('start check user');
+        console.dir(req.body)
+        let player = active_player_list.find(x => { 
+            if (x.uniqueId == req.body.uniqueId) {
+                return x
+            }
+        });
+        console.dir(player);
+        if (player) {
+            res.send(player);
+        } else {
+            res.send(null);
         }
-    });
-    console.dir(player);
-    if (player) {
-        res.send(player);
-    } else {
-        res.send(null);
+    } catch (ex) {
+        throw ex;
     }
+ 
 })
 
 
