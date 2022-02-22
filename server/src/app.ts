@@ -257,12 +257,12 @@ io.on('connection', async (socket: any) => {
             setTimeout(() => { 
                 console.log('startGame$ | $pickJudge ' + JSON.stringify(room.rounds[room.rounds.length - 1].judge));
                 $pickJudge(room, room.rounds[room.rounds.length - 1].judge);
+                $currentQuestion(room, first_question);
             }, 100)
             
     
           
             setTimeout(() => { 
-                $currentQuestion(room, first_question);
                 $startRound(room);
             }, 500)
             
@@ -319,7 +319,7 @@ io.on('connection', async (socket: any) => {
             current_round.status = 'picking';
     
             let my_cards = returnPlayerCards(user.uniqueId, my_room);
-            let me = getMyDetail();
+            let me = await getMyDetailByUniqueId();
             let foundIndex = null;
             let found_card = my_cards.find((x,i) => {
                 if (x.uniqueId == cardId) {
@@ -462,8 +462,8 @@ io.on('connection', async (socket: any) => {
             return room;
         }
         
-        function getMyDetail() {
-            return active_player_list.find(x => {if(x.socketId == socket.id) {
+        function getMyDetail(uniqueId) {
+            return active_player_list.find(x => {if(x.uniqueId == uniqueId) {
                 return x
             }})
         }
@@ -599,17 +599,14 @@ io.on('connection', async (socket: any) => {
                 console.log(pickComplete);
                 io.to(room.uniqueId).emit("$pickComplete",pickComplete);
             }, 100);
-    
-            //tell who is the next judge.
-            setTimeout(() => { 
-                $pickJudge(room,judge);
-            }, 200)
             
              //tell which is the next question and start the round.
-             setTimeout(() => { 
-                 $currentQuestion(room, question_next);
-                 $startRound(room);
-            }, 4000)
+            setTimeout(() => { 
+                $pickJudge(room,judge);
+                $currentQuestion(room, question_next);
+                $startRound(room);
+             }, 4000)
+            
         }
     
         function assignPlayerCards(room: Room, numberofCards: number) {

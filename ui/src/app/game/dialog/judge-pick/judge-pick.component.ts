@@ -10,29 +10,20 @@ import { SocketService } from 'src/app/socket.service';
 })
 export class JudgePickComponent implements OnInit {
 
-  pick: PickCompleteDTO;
+  pick: string;
   userName: string;
   constructor(
     public dialogRef: MatDialogRef<JudgePickComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: PickCompleteDTO,
+    @Inject(MAT_DIALOG_DATA) public data: any,
     private sk:SocketService
   ) {
-    this.pick = data;
-    if (this.pick) {
-      let player = this.pick.picks.find(x => { 
-        if (x.pickedCard.uniqueId == this.pick.answer.uniqueId) {
-          return x;
-        } else {
-          return null;
-        }
-      })
-      this.userName = player.userName;
-    }
+    this.pick = data?.pick;
+    this.userName = data?.userName;
   }
 
   ngOnInit(): void {
     setTimeout(() => { 
-      this.dialogRef.close([this.pick.answer.content,this.userName]);
+      this.dialogRef.close();
     },4000)
   }
 

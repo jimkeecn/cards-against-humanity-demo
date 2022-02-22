@@ -25,6 +25,7 @@ export class GameComponent implements OnInit {
   is_judge: boolean = false;
   is_judging: boolean = false;
   current_question: string = null;
+  previous_question: string = null;
   player_deck: Card[] = [];
   pick_deck: Card[] = [];
   roundNumber : number = 0;
@@ -83,11 +84,11 @@ export class GameComponent implements OnInit {
       }
     })
 
-
     this.sk.$currentQuestion().subscribe(x => { 
       let message = [`当前问题： ${x.content.replace('${}','______')}`, `${this.getImmediateDate()}`];
       this.sys_messages.push(message);
       this.current_question = x.content;
+      this.previous_question = x.content;
     })
 
     this.sk.$startRound().subscribe(x => { 
@@ -134,19 +135,35 @@ export class GameComponent implements OnInit {
       this.is_judge = false;
       this.pick_deck = [];
       console.dir(x);
+
+      let player = x.picks.find(y => { 
+        if (y.pickedCard.uniqueId == x.answer.uniqueId) {
+          return x;
+        } else {
+          return null;
+        }
+      })
+
+      let userName = player.userName;
+
+      let message = [];
+        if (this.previous_question.includes('${}')) {
+           message = [`最终答案为：${this.previous_question.replace('${}',x.answer.content)}<br>恭喜${userName}获得一分`,`${this.getImmediateDate()}`];
+        } else {
+           message = [`最终答案为：${this.previous_question},${x.answer.content}<br>恭喜${userName}获得一分`,`${this.getImmediateDate()}`];
+        }
+        
+      this.sys_messages.push(message);
+      this.previous_question = this.current_question;
       const dialog = this.dialog.open(JudgePickComponent, {
-        data: x,
+        data: {
+          pick: x.answer.content,
+          userName:userName
+        },
       });
 
       dialog.afterClosed().subscribe(msg => { 
-        let message = [];
-        if (this.current_question.includes('${}')) {
-           message = [`最终答案为：${this.current_question.replace('${}',msg[0])}<br>恭喜${msg[1]}获得一分`,`${this.getImmediateDate()}`];
-        } else {
-           message = [`最终答案为：${this.current_question},${msg[0]}<br>恭喜${msg[1]}获得一分`,`${this.getImmediateDate()}`];
-        }
         
-        this.sys_messages.push(message);
       })
     })
 
