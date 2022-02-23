@@ -1,1 +1,18 @@
-<p>rounds-state works!</p>
+<mat-dialog-content>
+    <p *ngIf="rounds.length == 0">游戏还没有开始....</p>
+<ng-container *ngFor="let round of rounds; let i = index">
+    <div class="round" *ngIf="round.status == 'completed'">
+        <h5>提问{{i + 1}}:{{round.question.content.replace('${}','______')}}</h5>
+        <ul>
+            <li *ngFor="let pick of round.picks">
+                {{pick.userName}}(玩家)选择答案:{{pick.pickedCard.content}}
+            </li>
+            <li>
+                {{round.judge.userName}}(裁判)的答案为：{{getAnswer(round.question.content,round.answer.content)}}<br>
+            </li>
+        </ul>
+    </div>
+</ng-container>
+</mat-dialog-content>
+
+

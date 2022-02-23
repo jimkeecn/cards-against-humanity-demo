@@ -1,7 +1,7 @@
 <div class="return">
     <mat-icon (click)="return()">keyboard_backspace</mat-icon>
     <div>
-        <button class="rounds-button" (click)="openState()">游戏数据</button>
+        <button class="rounds-button" (click)="openState()"><span class="iconify" data-icon="bi:list-ul"></span></button>
         <player-list 
         [max]="room?.totalPlayer" 
         [number]="room?.activePlayerList.length"

@@ -1,7 +1,7 @@
 //npx ts-node src/foo.ts
 //import express, {Request,Response,Application} from 'express';
 import express = require("express");
-import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO, RoomInput } from './models/model';
+import { Room , PlayerDTO, Player, GamePlayer, PickCompleteDTO, Question, Card, RoomDTO, RoomInput, PlayerPick } from './models/model';
 import { Server } from "socket.io";
 import cards_data from "./cards.json";
 import questions_data from "./questions.json";
@@ -396,17 +396,9 @@ io.on('connection', async (socket: any) => {
     
             current_round.answer = picked.pickedCard;
     
-            let winnerOfTheRound = findPlayerFromRoom(my_room, picked.uniqueId);
-            winnerOfTheRound.score = winnerOfTheRound.score + 1;
-    
-            if (winnerOfTheRound.score == 3) {
-                //annouce winner of the game..
-                my_room.isFinished = true;
-                io.to(my_room.uniqueId).emit("$gameOver", winnerOfTheRound);
-                io.socketsLeave(my_room.uniqueId);
-            } else {
-                roundOver(my_room);
-            }
+            roundOver(my_room,picked);
+
+           
         })
     
         socket.on('getGameProgress$', async (roomId) => { 
@@ -560,7 +552,7 @@ io.on('connection', async (socket: any) => {
         }
     
           
-        async function roundOver(room: Room) {
+        async function roundOver(room: Room,picked:PlayerPick) {
             //remove current round question from question list
             var current_round = room.rounds[room.rounds.length - 1];
             var question = current_round.question;
@@ -601,13 +593,25 @@ io.on('connection', async (socket: any) => {
                 console.log(pickComplete);
                 io.to(room.uniqueId).emit("$pickComplete",pickComplete);
             }, 100);
-            
-             //tell which is the next question and start the round.
+
+            let winnerOfTheRound = findPlayerFromRoom(room, picked.uniqueId);
+            winnerOfTheRound.score = winnerOfTheRound.score + 1;
+    
+            if (winnerOfTheRound.score == 3) {
+                //annouce winner of the game..
+                room.isFinished = true;
+                io.to(room.uniqueId).emit("$gameOver", winnerOfTheRound);
+                io.socketsLeave(room.uniqueId);
+            } else {
+                  //tell which is the next question and start the round.
             setTimeout(() => { 
                 $pickJudge(room,judge);
                 $currentQuestion(room, question_next);
                 $startRound(room);
              }, 4000)
+            }
+            
+           
             
         }
     
