@@ -65,6 +65,7 @@ import { JudgePickComponent } from './game/dialog/judge-pick/judge-pick.componen
 import { PlayerPickComponent } from './game/dialog/player-pick/player-pick.component';
 import { WinnerComponent } from './game/dialog/winner/winner.component';
 import { RulesComponent } from './game/dialog/rules/rules.component';
+import { RoundsStateComponent } from './game/dialog/rounds-state/rounds-state.component';
 
 
 @NgModule({
@@ -84,7 +85,8 @@ import { RulesComponent } from './game/dialog/rules/rules.component';
     JudgePickComponent,
     PlayerPickComponent,
     WinnerComponent,
-    RulesComponent
+    RulesComponent,
+    RoundsStateComponent
   ],
   imports: [
     BrowserModule,

@@ -1,10 +1,13 @@
 <div class="return">
     <mat-icon (click)="return()">keyboard_backspace</mat-icon>
-    <player-list 
-    [max]="room?.totalPlayer" 
-    [number]="room?.activePlayerList.length"
-    [uniqueId]="room_id"
-    ></player-list>
+    <div>
+        <button class="rounds-button" (click)="openState()">游戏数据</button>
+        <player-list 
+        [max]="room?.totalPlayer" 
+        [number]="room?.activePlayerList.length"
+        [uniqueId]="room_id"
+        ></player-list>
+    </div>
 </div>
 
 <div class="body" *ngIf="is_start">

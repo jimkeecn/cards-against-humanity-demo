@@ -6,6 +6,7 @@ import { Card, PickCompleteDTO, PlayerDTO, RoomDTO } from '../model';
 import { SocketService } from '../socket.service';
 import { JudgePickComponent } from './dialog/judge-pick/judge-pick.component';
 import { PlayerPickComponent } from './dialog/player-pick/player-pick.component';
+import { RoundsStateComponent } from './dialog/rounds-state/rounds-state.component';
 import { WinnerComponent } from './dialog/winner/winner.component';
 
 @Component({
@@ -197,6 +198,18 @@ export class GameComponent implements OnInit {
       alert('你不是房间拥有者。');
     }
     
+  }
+
+  openState(): void{
+    const dialog = this.dialog.open(RoundsStateComponent, {
+      data: {
+        uniqueId:this.room_id
+      },
+    });
+
+    dialog.afterClosed().subscribe(msg=> { 
+      
+    })
   }
 
   private getImmediateDate() {
