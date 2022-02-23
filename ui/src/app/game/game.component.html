@@ -26,5 +26,5 @@
 
 <begin *ngIf="!is_start" 
 [isOwner]="is_owner" [roomId]="room_id" 
-[max]="room.totalPlayer" [number]="room.activePlayerList.length"></begin>
+[max]="room?.totalPlayer" [number]="room?.activePlayerList.length"></begin>
 <messager [messages]="sys_messages"></messager>

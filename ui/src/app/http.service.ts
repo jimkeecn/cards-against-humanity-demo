@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { GamePlayer } from './model';
+import { GamePlayer, Round } from './model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,5 +20,9 @@ export class HttpService {
 
   getPlayerList(id:any) {
     return this.http.get<GamePlayer[]>(environment.url + `/getPlayerList/${id}`);
+  }
+
+  getRoundDetail(id: any) {
+    return this.http.get<Round[]>(environment.url + `/getRoundDetail/${id}`);
   }
 }

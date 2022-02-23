@@ -15,7 +15,7 @@
         </thead>
         <tbody>
             <tr *ngFor="let player of players">
-                <td>{{player.userName}}</td>
+                <td>{{player.userName}}<span *ngIf="getMe(player.uniqueId)">me</span></td>
                 <td>{{player.score}}</td>
             </tr>
         </tbody>

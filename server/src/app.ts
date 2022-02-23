@@ -211,7 +211,9 @@ io.on('connection', async (socket: any) => {
             let dto = await getRoomDTO(roomId);
             if (dto) {
                 socket.emit("$getRoomDetail",dto)
-            } 
+            } else {
+                socket.emit("$getRoomDetail",null)
+            }
         })
     
         socket.on("startGame$", async (roomId:string) => { 
@@ -1027,6 +1029,8 @@ app.get('/getRoundDetail/:id', (req, res) => {
   
     
 })
+
+
 
 app.post('/checkuser', (req, res) => { 
     try {

@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { HttpService } from 'src/app/http.service';
 import { GamePlayer, PlayerDTO } from 'src/app/model';
+import { SocketService } from 'src/app/socket.service';
 
 @Component({
   selector: 'player-list',
@@ -14,7 +15,7 @@ export class PlayerListComponent implements OnInit {
   @Input() players: GamePlayer[] = [];
   @Input() uniqueId: string = "";
   isActive: boolean = false;
-  constructor(private http:HttpService) { }
+  constructor(private http:HttpService, private sk:SocketService) { }
 
   ngOnInit(): void {
 
@@ -28,6 +29,15 @@ export class PlayerListComponent implements OnInit {
           this.players = x;
         }
       })
+    }
+  }
+
+  getMe(id) {
+    let me = this.sk.getUser();
+    if (id == me.uniqueId) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

@@ -53,19 +53,25 @@ export class GameComponent implements OnInit {
     })
 
     this.sk.$getRoomDetail().subscribe(x => { 
-      console.log('$getRoomDetail |' + JSON.stringify(x));
-      this.room = x;
-      this.is_start = this.room?.isStart;
-      let current_user = this.sk.getLocalUser();
-      if (current_user.uniqueId == this.room.owner.uniqueId) {
-        this.is_owner = true;
+      if (x) {
       } else {
-        this.is_owner = false;
+        this.route.navigate(['/roomlist']);
       }
 
-      if (this.is_start) {
-        this.sk.getGameProgress$(this.room.uniqueId);
-      }
+      console.log('$getRoomDetail |' + JSON.stringify(x));
+        this.room = x;
+        this.is_start = this.room?.isStart;
+        let current_user = this.sk.getLocalUser();
+        if (current_user.uniqueId == this.room.owner.uniqueId) {
+          this.is_owner = true;
+        } else {
+          this.is_owner = false;
+        }
+  
+        if (this.is_start) {
+          this.sk.getGameProgress$(this.room.uniqueId);
+        }
+     
     })
 
     this.sk.$ownerDisconnected().pipe(take(1)).subscribe(x => { 
